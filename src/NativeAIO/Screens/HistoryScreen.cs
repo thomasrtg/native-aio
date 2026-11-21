@@ -553,11 +553,11 @@ namespace NativeAIO.Screens
             live.Add(t);
             t.Root = new View { Position = new Position(t.X, t.Y), Size = new Size(CardW, CardH) };
             // Contour du focus (charte, cartes) : blanc de 3 px, liseré sombre de 3 px.
-            var ring = new View { Position = new Position(-6, -6), Size = new Size(CardW + 12, CardH + 12), CornerRadius = 18, BackgroundColor = Color.White };
-            ring.Add(new View { Position = new Position(3, 3), Size = new Size(CardW + 6, CardH + 6), CornerRadius = 15, BackgroundColor = Back });
+            var ring = new View { Position = new Position(-6, -6), Size = new Size(CardW + 12, CardH + 12), BackgroundColor = Color.White }.Rounded(18);
+            ring.Add(new View { Position = new Position(3, 3), Size = new Size(CardW + 6, CardH + 6), BackgroundColor = Back }.Rounded(15));
             t.Root.Add(ring);
-            t.Root.Add(new View { Size = new Size(CardW, CardH), CornerRadius = 12, BackgroundColor = Surface });
-            t.Poster = new View { Position = new Position(8, 8), Size = new Size(PosterW, PosterH), CornerRadius = 8, BackgroundColor = TileBack };
+            t.Root.Add(new View { Size = new Size(CardW, CardH), BackgroundColor = Surface }.Rounded(12));
+            t.Poster = new View { Position = new Position(8, 8), Size = new Size(PosterW, PosterH), BackgroundColor = TileBack }.Rounded(8);
             t.Root.Add(t.Poster);
 
             Item it = t.Items[0];
@@ -633,7 +633,7 @@ namespace NativeAIO.Screens
             if (Closed || path == null || t.Dead || t.Poster == null || t.Poster.ChildCount > 0) return;
             View v = Pictures.Cover(path, PosterW, PosterH, out ImageView img);
             if (v == null) return;
-            img.CornerRadius = 8;
+            img.Rounded(8);
             t.Poster.Add(v);
         }
     }

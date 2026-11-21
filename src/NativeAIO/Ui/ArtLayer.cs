@@ -252,8 +252,8 @@ namespace NativeAIO.Ui
             bool dark = false;
             string src = ArtWash.On ? Current(out dark) : null;
             if (src == null)
-                return mask != null ? null : new View { Position = new Position(x, y), Size = new Size(w, h), CornerRadius = radius, BackgroundColor = Theme.Background };
-            var v = new ImageView { Position = new Position(x, y), Size = new Size(w, h), CornerRadius = radius };
+                return mask != null ? null : new View { Position = new Position(x, y), Size = new Size(w, h), BackgroundColor = Theme.Background }.Rounded(radius);
+            var v = new ImageView { Position = new Position(x, y), Size = new Size(w, h) }.Rounded(radius);
             if (dark) { v.FittingMode = FittingModeType.ScaleToFill; v.Color = new Color(0.2f, 0.2f, 0.2f, 1f); }
             if (mask != null) { v.CropToMask = false; v.AlphaMaskURL = mask; }
             v.ResourceUrl = src;

@@ -53,7 +53,7 @@ namespace NativeAIO.Screens
             }
 
             qrPage = new View { Size = new Size(1920, 1080) };
-            qrBox = new View { BackgroundColor = Color.White, CornerRadius = Theme.RadiusLarge };
+            qrBox = new View { BackgroundColor = Color.White }.Rounded(Theme.RadiusLarge);
             qrPage.Add(qrBox);
             status = new TextLabel
             {
@@ -90,9 +90,8 @@ namespace NativeAIO.Screens
             {
                 Position = new Position(textX, 820),
                 Size = new Size(ButtonW, ButtonH),
-                CornerRadius = ButtonH / 2,
                 BackgroundColor = Color.White,
-            };
+            }.Rounded(ButtonH / 2);
             button = new TextLabel
             {
                 PointSize = Theme.SizeBody,

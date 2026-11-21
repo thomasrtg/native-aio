@@ -64,7 +64,7 @@ namespace NativeAIO.Ui
 
         public Picker()
         {
-            View = new View { Size = new Size(DefaultWidth, 0), CornerRadius = Theme.RadiusLarge + Pad, BackgroundColor = Theme.Menu };
+            View = new View { Size = new Size(DefaultWidth, 0), BackgroundColor = Theme.Menu }.Rounded(Theme.RadiusLarge + Pad);
             list = new View();
             list.Add(light.View);
             View.Add(list);

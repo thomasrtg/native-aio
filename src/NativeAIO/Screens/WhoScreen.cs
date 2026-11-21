@@ -85,9 +85,8 @@ namespace NativeAIO.Screens
             var circle = new View
             {
                 Size = new Size(Avatar, Avatar),
-                CornerRadius = Avatar / 2,
                 BackgroundColor = new Color(accent.R, accent.G, accent.B, 0.3f),
-            };
+            }.Rounded(Avatar / 2);
             string name = u.User?.Name ?? "?";
             // Initiale dessous, image par-dessus : si l'image ne vient pas, l'initiale reste.
             var initial = new TextLabel
@@ -107,8 +106,7 @@ namespace NativeAIO.Screens
                 {
                     Size = new Size(Avatar, Avatar),
                     ResourceUrl = u.Avatar, // sans DesiredWidth/Height : plante sur une image distante
-                    CornerRadius = Avatar / 2,
-                });
+                }.Rounded(Avatar / 2));
             }
             face.Add(ring);
             face.Add(circle);

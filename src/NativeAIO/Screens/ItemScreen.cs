@@ -173,7 +173,7 @@ namespace NativeAIO.Screens
             genres = new View();
             buttonsView = new View();
             // Nom de l'icône regardée : bulle comme celle de la barre latérale.
-            hint = new TextLabel { PointSize = Theme.SizeBody, TextColor = Color.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, CornerRadius = Theme.RadiusLarge, BackgroundColor = Theme.Panel };
+            hint = new TextLabel { PointSize = Theme.SizeBody, TextColor = Color.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, BackgroundColor = Theme.Panel }.Rounded(Theme.RadiusLarge);
             hint.Hide();
             buttonsView.Add(hint);
             foreach (View v in new View[] { meta, airing, genres, overview, buttonsView, note }) { v.Hide(); header.Add(v); }
@@ -534,7 +534,7 @@ namespace NativeAIO.Screens
             if (Closed || path == null) return;
             View v = Pictures.Cover(path, PosterW, PosterH, out ImageView img);
             if (v == null) return;
-            img.CornerRadius = Theme.RadiusLarge; // grande image (charte)
+            img.Rounded(Theme.RadiusLarge); // grande image (charte)
             v.Position = new Position(Left, Top);
             header.Add(v);
             Fade(img);
@@ -607,7 +607,7 @@ namespace NativeAIO.Screens
                     // Largeur estimée : 10 px par caractère à 18 pt (9 à 9,5 mesurés à la sonde).
                     const int h = Theme.PillHeight;
                     int w = 48 + item.Genres[i].Length * 10;
-                    var chip = new View { Position = new Position(x, 0), Size = new Size(w, h), CornerRadius = h / 2, BackgroundColor = Theme.Marked };
+                    var chip = new View { Position = new Position(x, 0), Size = new Size(w, h), BackgroundColor = Theme.Marked }.Rounded(h / 2);
                     chip.Add(new TextLabel { Size = new Size(w, h), PointSize = Theme.SizeBody, Text = item.Genres[i], TextColor = Color.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
                     genres.Add(chip);
                     x += w + 12;
@@ -699,7 +699,7 @@ namespace NativeAIO.Screens
             int width = BtnH;
             var b = new Btn { Text = text, Shown = shown, Run = run, Width = width, Hint = hint, Active = active, Heart = heart, Icon = icon };
             b.Root = new View();
-            b.Box = new View { Size = new Size(width, BtnH), CornerRadius = BtnH / 2 };
+            b.Box = new View { Size = new Size(width, BtnH) }.Rounded(BtnH / 2);
             b.Label = new TextLabel { Size = new Size(width, BtnH), PointSize = Theme.SizeBody, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Text = text() };
             b.Box.Add(b.Label);
             b.Root.Add(b.Box);
@@ -1137,7 +1137,7 @@ namespace NativeAIO.Screens
             {
                 // Pastille d'une saison (charte) : le texte y est posé tout de suite (peu de saisons).
                 // Pas de contour : regardée, elle passe sur fond blanc (PaintSeason).
-                t.Frame = new View { Size = new Size(s.TileW, s.ImageH), CornerRadius = s.ImageH / 2 };
+                t.Frame = new View { Size = new Size(s.TileW, s.ImageH) }.Rounded(s.ImageH / 2);
                 t.Label = new TextLabel { Size = new Size(s.TileW, s.ImageH), PointSize = Theme.SizeBody, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
                 t.Label.Text = (t.Item.Name ?? "") + (t.Item.UserData?.Played == true ? "  ✓" : "");
                 t.Frame.Add(t.Label);
@@ -1157,7 +1157,7 @@ namespace NativeAIO.Screens
             int radius = round ? w / 2 : Theme.RadiusSmall;
             t.Ring = Theme.FocusRing(w, s.ImageH, radius);
             t.Ring.Position = new Position(x - Theme.RingOut, -Theme.RingOut);
-            t.Frame = new View { Position = new Position(x, 0), Size = new Size(w, s.ImageH), CornerRadius = radius, BackgroundColor = Theme.Placeholder };
+            t.Frame = new View { Position = new Position(x, 0), Size = new Size(w, s.ImageH), BackgroundColor = Theme.Placeholder }.Rounded(radius);
             if (s.Kind == Kind.Episodes && t.Item != null) AddProgress(t);
             t.Ring.Hide();
             t.Root.Add(t.Ring);
@@ -1176,8 +1176,8 @@ namespace NativeAIO.Screens
             // (arrondi de l'image - 4 px) de chaque côté pour épouser les coins.
             const int h = 8;
             int inset = Theme.RadiusSmall - h / 2, bw = s.TileW - 2 * inset;
-            t.Frame.Add(new View { Name = "progress", Position = new Position(inset, s.ImageH - h), Size = new Size(bw, h), CornerRadius = h / 2, BackgroundColor = new Color(0f, 0f, 0f, 0.6f) });
-            t.Frame.Add(new View { Name = "progress", Position = new Position(inset, s.ImageH - h), Size = new Size(Math.Max(h, (int)(bw * pct / 100)), h), CornerRadius = h / 2, BackgroundColor = Theme.Accent });
+            t.Frame.Add(new View { Name = "progress", Position = new Position(inset, s.ImageH - h), Size = new Size(bw, h), BackgroundColor = new Color(0f, 0f, 0f, 0.6f) }.Rounded(h / 2));
+            t.Frame.Add(new View { Name = "progress", Position = new Position(inset, s.ImageH - h), Size = new Size(Math.Max(h, (int)(bw * pct / 100)), h), BackgroundColor = Theme.Accent }.Rounded(h / 2));
         }
 
         // Textes sous la carte (un seul TextLabel par carte, sauf les épisodes : titre et corps).
@@ -1260,7 +1260,7 @@ namespace NativeAIO.Screens
             // Coche « vu » : rond à l'accent du thème ; « Non diffusé » : pastille sombre à 90 %,
             // lisible sur une image claire (charte).
             bool check = w == 40;
-            var b = new View { Name = check ? CardMenu.CheckName : "", Position = new Position(x, y), Size = new Size(w, 32), CornerRadius = 16, BackgroundColor = check ? Theme.Accent : Theme.Panel };
+            var b = new View { Name = check ? CardMenu.CheckName : "", Position = new Position(x, y), Size = new Size(w, 32), BackgroundColor = check ? Theme.Accent : Theme.Panel }.Rounded(16);
             b.Add(new TextLabel { Size = new Size(w, 32), PointSize = Theme.SizeSmall, TextColor = check ? Theme.OnAccent : Color.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Text = text });
             return b;
         }
@@ -1312,7 +1312,7 @@ namespace NativeAIO.Screens
             if (s.Kind == Kind.Episodes)
                 Probe.Log("tile", "épisode " + t.Index + " : " + System.IO.Path.GetExtension(path) + (v == null ? " refusé" : " affiché"));
             if (v == null) return;
-            img.CornerRadius = Theme.RadiusSmall; // images arrondies au décodage (charte)
+            img.Rounded(Theme.RadiusSmall); // images arrondies au décodage (charte)
             t.Frame.Add(v);
             v.LowerToBottom();
             // Image de la série sous un épisode à venir : assombrie, le numéro par-dessus.

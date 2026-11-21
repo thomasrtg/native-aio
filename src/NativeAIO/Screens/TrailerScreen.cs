@@ -175,8 +175,8 @@ namespace NativeAIO.Screens
             controls.Add(stateIcon);
             controls.Add(times);
             controls.Add(timesTotal);
-            var track = new View { Position = new Position(Margin, BarY), Size = new Size(BarW, 4), CornerRadius = 2, BackgroundColor = Theme.White(0.2f) };
-            barPlayed = new View { Size = new Size(0, 4), CornerRadius = 2, BackgroundColor = Theme.AccentText };
+            var track = new View { Position = new Position(Margin, BarY), Size = new Size(BarW, 4), BackgroundColor = Theme.White(0.2f) }.Rounded(2);
+            barPlayed = new View { Size = new Size(0, 4), BackgroundColor = Theme.AccentText }.Rounded(2);
             track.Add(barPlayed);
             controls.Add(track);
         }

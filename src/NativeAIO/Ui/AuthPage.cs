@@ -98,8 +98,8 @@ namespace NativeAIO.Ui
             View.Add(logo);
             if (card)
             {
-                cardBorder = new View { CornerRadius = CardR, BackgroundColor = CardBorder };
-                cardFill = new View { Position = new Position(Border, Border), CornerRadius = CardR - Border, BackgroundColor = CardFill };
+                cardBorder = new View { BackgroundColor = CardBorder }.Rounded(CardR);
+                cardFill = new View { Position = new Position(Border, Border), BackgroundColor = CardFill }.Rounded(CardR - Border);
                 cardBorder.Add(cardFill);
                 View.Add(cardBorder);
             }
@@ -158,8 +158,8 @@ namespace NativeAIO.Ui
             it.Text.FontStyle = Theme.SemiBold();
             it.Text.EnableMarkup = true;
             it.Text.Size = new Size(W, LabelH);
-            it.FieldBorder = new View { Position = new Position(0, LabelH + LabelGap), Size = new Size(W, FieldH), CornerRadius = FieldR, BackgroundColor = FieldBorder };
-            it.Fill = new View { CornerRadius = FieldR - Border, BackgroundColor = FieldFill };
+            it.FieldBorder = new View { Position = new Position(0, LabelH + LabelGap), Size = new Size(W, FieldH), BackgroundColor = FieldBorder }.Rounded(FieldR);
+            it.Fill = new View { BackgroundColor = FieldFill }.Rounded(FieldR - Border);
             var f = new TextField
             {
                 Position = new Position(18 - Border, 0),
@@ -227,7 +227,7 @@ namespace NativeAIO.Ui
             it.Ring = Theme.HollowRing(w, ButtonH, ButtonH / 2);
             it.Ring.Position = new Position(-Theme.RingOut, -Theme.RingOut);
             it.Ring.Hide();
-            it.Box = new View { Size = new Size(w, ButtonH), CornerRadius = ButtonH / 2, BackgroundColor = Color.White };
+            it.Box = new View { Size = new Size(w, ButtonH), BackgroundColor = Color.White }.Rounded(ButtonH / 2);
             it.Text = Label(Theme.SizeBody, Theme.Ink, true);
             it.Text.Size = new Size(w, ButtonH);
             it.Box.Add(it.Text);
@@ -243,7 +243,7 @@ namespace NativeAIO.Ui
             it.View = new View { Size = new Size(W, PillH) };
             foreach (var (text, run) in links)
             {
-                var l = new Link { Text = text, Run = run, Box = new View { CornerRadius = PillH / 2 } };
+                var l = new Link { Text = text, Run = run, Box = new View().Rounded(PillH / 2) };
                 l.Label = Label(Theme.SizeBody, Color.White, true);
                 l.Label.FontStyle = Theme.SemiBold();
                 l.Box.Add(l.Label);
@@ -474,7 +474,7 @@ namespace NativeAIO.Ui
                         it.FieldBorder.BackgroundColor = on ? Theme.Accent : FieldBorder;
                         it.Fill.Position = new Position(b, b);
                         it.Fill.Size = new Size(W - 2 * b, FieldH - 2 * b);
-                        it.Fill.CornerRadius = FieldR - b;
+                        it.Fill.Rounded(FieldR - b);
                         it.Field.PositionX = 18 - b;
                         break;
                     case Type.Button:

@@ -47,7 +47,7 @@ namespace NativeAIO.Ui
             spots.Clear();
             slide?.Stop();
             group = new View { Position = new Position(x, y) };
-            thumb = new View { Size = new Size(MinW, PillH), CornerRadius = PillH / 2f, BackgroundColor = Color.White };
+            thumb = new View { Size = new Size(MinW, PillH), BackgroundColor = Color.White }.Rounded(PillH / 2f);
             group.Add(thumb);
             int px = Pad;
             foreach (string t in texts)
@@ -67,10 +67,10 @@ namespace NativeAIO.Ui
             }
             Width = px - 4 + Pad;
             group.Size = new Size(Width, H);
-            group.CornerRadius = H / 2f;
+            group.Rounded(H / 2f);
             group.BackgroundColor = Faint;
-            ring = new View { Position = new Position(x - 6, y - 6), Size = new Size(Width + 12, H + 12), CornerRadius = H / 2f + 6, BackgroundColor = Color.White };
-            ring.Add(new View { Position = new Position(3, 3), Size = new Size(Width + 6, H + 6), CornerRadius = H / 2f + 3, BackgroundColor = Back });
+            ring = new View { Position = new Position(x - 6, y - 6), Size = new Size(Width + 12, H + 12), BackgroundColor = Color.White }.Rounded(H / 2f + 6);
+            ring.Add(new View { Position = new Position(3, 3), Size = new Size(Width + 6, H + 6), BackgroundColor = Back }.Rounded(H / 2f + 3));
             parent.Add(ring);
             parent.Add(group);
             Chosen = Math.Max(0, Math.Min(Chosen, labels.Count - 1));

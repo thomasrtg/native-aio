@@ -73,11 +73,11 @@ namespace NativeAIO.Screens
         void AddRow(int i, string backdrop)
         {
             MediaUrl t = trailers[i];
-            var box = new View { Position = new Position(PX + In, i * RowH), Size = new Size(BoxW, BoxH), CornerRadius = Theme.RadiusLarge };
-            var thumbBack = new View { Position = new Position(In, In), Size = new Size(ThumbW, ThumbH), CornerRadius = Theme.RadiusSmall, BackgroundColor = Theme.Placeholder };
+            var box = new View { Position = new Position(PX + In, i * RowH), Size = new Size(BoxW, BoxH) }.Rounded(Theme.RadiusLarge);
+            var thumbBack = new View { Position = new Position(In, In), Size = new Size(ThumbW, ThumbH), BackgroundColor = Theme.Placeholder }.Rounded(Theme.RadiusSmall);
             box.Add(thumbBack);
             // Ligne regardée : vignette assombrie à 30 % et triangle de lecture, comme le web.
-            var shade = new View { Position = new Position(In, In), Size = new Size(ThumbW, ThumbH), CornerRadius = Theme.RadiusSmall, BackgroundColor = new Color(0f, 0f, 0f, 0.3f) };
+            var shade = new View { Position = new Position(In, In), Size = new Size(ThumbW, ThumbH), BackgroundColor = new Color(0f, 0f, 0f, 0.3f) }.Rounded(Theme.RadiusSmall);
             shade.Add(new ImageView { ResourceUrl = Theme.IconPath("play_small"), Size = new Size(IconSize, IconSize), Position = new Position((ThumbW - IconSize) / 2, (ThumbH - IconSize) / 2) });
             shade.Opacity = 0f;
             box.Add(shade);
@@ -103,7 +103,7 @@ namespace NativeAIO.Screens
                 if (Closed || path == null) return;
                 View v = Pictures.Cover(path, ThumbW, ThumbH, out ImageView img);
                 if (v == null) return;
-                img.CornerRadius = Theme.RadiusSmall;
+                img.Rounded(Theme.RadiusSmall);
                 thumbBack.Add(v);
             }));
         }

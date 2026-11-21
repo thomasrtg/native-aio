@@ -113,8 +113,8 @@ namespace NativeAIO.Ui
         // sombre de 3 px, coins concentriques. À poser en (-RingOut, -RingOut) de l'élément, dessous.
         public static View FocusRing(int w, int h, int radius)
         {
-            var ring = new View { Size = new Size(w + 2 * RingOut, h + 2 * RingOut), CornerRadius = radius + RingOut, BackgroundColor = Color.White };
-            ring.Add(new View { Position = new Position(Ring, Ring), Size = new Size(w + 2 * Ring, h + 2 * Ring), CornerRadius = radius + Ring, BackgroundColor = Liner });
+            var ring = new View { Size = new Size(w + 2 * RingOut, h + 2 * RingOut), BackgroundColor = Color.White }.Rounded(radius + RingOut);
+            ring.Add(new View { Position = new Position(Ring, Ring), Size = new Size(w + 2 * Ring, h + 2 * Ring), BackgroundColor = Liner }.Rounded(radius + Ring));
             return ring;
         }
 

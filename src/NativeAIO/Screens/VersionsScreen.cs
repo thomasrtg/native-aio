@@ -122,7 +122,7 @@ namespace NativeAIO.Screens
                     if (Closed || path == null) return;
                     View v = Pictures.Cover(path, PW, headH, out ImageView img);
                     if (v == null) return;
-                    img.CornerRadius = Theme.RadiusLarge;
+                    img.Rounded(Theme.RadiusLarge);
                     v.Opacity = 0.25f;
                     art.Add(v);
                 }));
@@ -130,7 +130,7 @@ namespace NativeAIO.Screens
             heading = new TextLabel { Position = new Position(Left, PY + Pad), Size = new Size(IW, 36), PointSize = Theme.SizeHeading, TextColor = Color.White, FontStyle = Theme.SemiBold(), Ellipsis = true };
             sub = new TextLabel { Position = new Position(Left, PY + Pad + 40), Size = new Size(IW, 24), PointSize = Theme.SizeInfo, TextColor = Theme.Grey, Ellipsis = true };
             status = new TextLabel { Position = new Position(Left, PY + countY), Size = new Size(IW - Circle - Theme.Gap, Circle), PointSize = Theme.SizeInfo, TextColor = Theme.Grey, VerticalAlignment = VerticalAlignment.Center };
-            refresh = new View { Position = new Position(Left + IW - Circle, PY + countY), Size = new Size(Circle, Circle), CornerRadius = Circle / 2f, BackgroundColor = Theme.Surface };
+            refresh = new View { Position = new Position(Left + IW - Circle, PY + countY), Size = new Size(Circle, Circle), BackgroundColor = Theme.Surface }.Rounded(Circle / 2f);
             refreshIcon = new ImageView { ResourceUrl = Theme.IconPath("refresh"), Size = new Size(IconSize, IconSize), Position = new Position((Circle - IconSize) / 2, (Circle - IconSize) / 2) };
             refresh.Add(refreshIcon);
             refresh.Hide();
@@ -144,12 +144,12 @@ namespace NativeAIO.Screens
                 capRing = Theme.HollowRing(IW, CapH, CapH / 2);
                 capRing.Position = new Position(Left - Theme.RingOut, y - Theme.RingOut);
                 capRing.Hide();
-                capsule = new View { Position = new Position(Left, y), Size = new Size(IW, CapH), CornerRadius = CapH / 2f, BackgroundColor = Theme.Capsule };
+                capsule = new View { Position = new Position(Left, y), Size = new Size(IW, CapH), BackgroundColor = Theme.Capsule }.Rounded(CapH / 2f);
                 halves = new View[2];
                 halfTexts = new TextLabel[2];
                 for (int i = 0; i < 2; i++)
                 {
-                    halves[i] = new View { Position = new Position(4 + i * (Half + 4), 4), Size = new Size(Half, Theme.PillHeight), CornerRadius = Theme.PillHeight / 2f };
+                    halves[i] = new View { Position = new Position(4 + i * (Half + 4), 4), Size = new Size(Half, Theme.PillHeight) }.Rounded(Theme.PillHeight / 2f);
                     halfTexts[i] = new TextLabel { Size = new Size(Half, Theme.PillHeight), PointSize = Theme.SizeBody, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextColor = Color.White };
                     halves[i].Add(halfTexts[i]);
                     capsule.Add(halves[i]);

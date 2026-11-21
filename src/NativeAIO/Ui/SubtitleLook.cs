@@ -57,7 +57,7 @@ namespace NativeAIO.Ui
             this.factor = factor;
             AddFonts();
             View = new View { Size = new Size(width, height) };
-            back = new View { CornerRadius = 4 };
+            back = new View().Rounded(4);
             back.Hide();
             text = new TextLabel
             {

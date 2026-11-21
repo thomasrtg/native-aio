@@ -213,7 +213,7 @@ namespace NativeAIO.Screens
             BuildPanel();
 
             // Message bref (décalage, recalage), en haut à gauche sous le titre.
-            noticeBox = new View { CornerRadius = Theme.RadiusLarge, BackgroundColor = Theme.Panel };
+            noticeBox = new View { BackgroundColor = Theme.Panel }.Rounded(Theme.RadiusLarge);
             noticeLabel = new TextLabel { PointSize = Theme.SizeInfo, TextColor = Color.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
             noticeBox.Add(noticeLabel);
             noticeBox.Hide();
@@ -459,11 +459,11 @@ namespace NativeAIO.Screens
 
             // Barre fine comme le web : rail blanc à 20 %, partie lue à l'accent éclairci (--brand) ;
             // rond blanc seulement quand la barre est regardée (posés par Refresh).
-            barTrack = new View { Position = new Position(Margin, BarY), Size = new Size(BarW, 4), CornerRadius = 2, BackgroundColor = Theme.White(0.2f) };
-            barPlayed = new View { Position = new Position(0, 0), Size = new Size(0, 4), CornerRadius = 2, BackgroundColor = Theme.AccentText };
+            barTrack = new View { Position = new Position(Margin, BarY), Size = new Size(BarW, 4), BackgroundColor = Theme.White(0.2f) }.Rounded(2);
+            barPlayed = new View { Position = new Position(0, 0), Size = new Size(0, 4), BackgroundColor = Theme.AccentText }.Rounded(2);
             barTrack.Add(barPlayed);
             controls.Add(barTrack);
-            barThumb = new View { Size = new Size(16, 16), CornerRadius = 8, BackgroundColor = Color.White };
+            barThumb = new View { Size = new Size(16, 16), BackgroundColor = Color.White }.Rounded(8);
             controls.Add(barThumb);
 
             // Boutons : lecture, -10, +10, épisodes précédent et suivant à gauche ; versions, audio, sous-titres,
@@ -471,7 +471,7 @@ namespace NativeAIO.Screens
             // regardé = rond blanc et icône teintée en foncé (Refresh).
             for (int i = 0; i < BtnOrder.Length; i++)
             {
-                var box = new View { Position = new Position(0, BtnY), Size = new Size(BtnD, BtnD), CornerRadius = BtnD / 2 };
+                var box = new View { Position = new Position(0, BtnY), Size = new Size(BtnD, BtnD) }.Rounded(BtnD / 2);
                 int o = (BtnD - BtnIcon) / 2;
                 var img = new ImageView(Icon(BtnIcons[i])) { Position = new Position(o, o), Size = new Size(BtnIcon, BtnIcon), Color = IconRest };
                 box.Add(img);
@@ -483,7 +483,7 @@ namespace NativeAIO.Screens
             LayoutButtons();
 
             // Bulle au-dessus du bouton choisi : son nom, comme la bulle de la barre latérale.
-            tip = new View { Size = new Size(200, 44), CornerRadius = Theme.RadiusLarge, BackgroundColor = Theme.Panel };
+            tip = new View { Size = new Size(200, 44), BackgroundColor = Theme.Panel }.Rounded(Theme.RadiusLarge);
             tipLabel = new TextLabel { Size = new Size(200, 44), PointSize = Theme.SizeBody, TextColor = Color.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
             tip.Add(tipLabel);
             tip.Hide();
@@ -1503,7 +1503,7 @@ namespace NativeAIO.Screens
             CloseDrawer(false);
             drawer = new View { Size = new Size(1920, 1080), BackgroundColor = Theme.Veil, Opacity = 0f };
             Color back = Theme.Background;
-            drawer.Add(new View { Position = new Position(DrawerX, DrawerY), Size = new Size(DrawerW, DrawerH), CornerRadius = Theme.RadiusLarge, BackgroundColor = back });
+            drawer.Add(new View { Position = new Position(DrawerX, DrawerY), Size = new Size(DrawerW, DrawerH), BackgroundColor = back }.Rounded(Theme.RadiusLarge));
             const int headH = 36, listTop = DrawerY + DrawerPad + headH + 24;
             int listH = DrawerY + DrawerH - 24 - listTop;
             vlist = new VersionList(drawer, DrawerX + DrawerPad, DrawerW - 2 * DrawerPad, listTop, listH, DrawerY, DrawerY + DrawerH, DrawerX + DrawerW - 14, guard, () => Closed || drawer == null);
@@ -1511,7 +1511,7 @@ namespace NativeAIO.Screens
             // En-tête par-dessus la liste, arrêté 14 px au-dessus (contour de la carte grossie) :
             // coins du haut arrondis comme le tiroir, bas droit.
             int coverH = listTop - 14 - DrawerY;
-            drawer.Add(new View { Position = new Position(DrawerX, DrawerY), Size = new Size(DrawerW, coverH), CornerRadius = Theme.RadiusLarge, BackgroundColor = back });
+            drawer.Add(new View { Position = new Position(DrawerX, DrawerY), Size = new Size(DrawerW, coverH), BackgroundColor = back }.Rounded(Theme.RadiusLarge));
             drawer.Add(new View { Position = new Position(DrawerX, DrawerY + Theme.RadiusLarge), Size = new Size(DrawerW, coverH - Theme.RadiusLarge), BackgroundColor = back });
             var heading = new TextLabel { Position = new Position(DrawerX + DrawerPad, DrawerY + DrawerPad), Size = new Size(DrawerW - 2 * DrawerPad, headH), PointSize = Theme.SizeHeading, TextColor = Color.White, FontStyle = Theme.SemiBold(), VerticalAlignment = VerticalAlignment.Center };
             drawer.Add(heading);
@@ -2197,8 +2197,8 @@ namespace NativeAIO.Screens
         // dessous) ; regardé : blanc plein, texte foncé (PaintAction).
         static View ActionButton(int w, int h, Color fill, out View inner, out TextLabel label)
         {
-            var outer = new View { Size = new Size(w, h), CornerRadius = h / 2f, BackgroundColor = Color.White };
-            inner = new View { Position = new Position(2, 2), Size = new Size(w - 4, h - 4), CornerRadius = (h - 4) / 2f, BackgroundColor = fill };
+            var outer = new View { Size = new Size(w, h), BackgroundColor = Color.White }.Rounded(h / 2f);
+            inner = new View { Position = new Position(2, 2), Size = new Size(w - 4, h - 4), BackgroundColor = fill }.Rounded((h - 4) / 2f);
             label = new TextLabel { Size = new Size(w, h), PointSize = Theme.SizeBody, TextColor = Color.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
             outer.Add(inner);
             outer.Add(label);
@@ -2480,7 +2480,7 @@ namespace NativeAIO.Screens
         // Image de l'épisode suivant dans un cadre arrondi (fond gris tant qu'elle n'est pas là).
         View NextImage(int x, int y, int w, int h, int radius)
         {
-            var box = new View { Position = new Position(x, y), Size = new Size(w, h), CornerRadius = radius, BackgroundColor = Theme.Placeholder };
+            var box = new View { Position = new Position(x, y), Size = new Size(w, h), BackgroundColor = Theme.Placeholder }.Rounded(radius);
             string url = Library.Landscape(next, w);
             if (url != null)
                 ImageCache.Request(url, () => Closed ? int.MaxValue : 0, path => guard.Run("NextImage", () =>
@@ -2488,7 +2488,7 @@ namespace NativeAIO.Screens
                     if (Closed || path == null) return;
                     View v = Pictures.Cover(path, w, h, out ImageView iv);
                     if (v == null) return;
-                    if (iv != null) iv.CornerRadius = radius;
+                    if (iv != null) iv.Rounded(radius);
                     box.Add(v);
                 }));
             return box;
@@ -2499,7 +2499,7 @@ namespace NativeAIO.Screens
         // dans 15 s / Masquer en capsules, décompte blanc. Fond des menus (bg-gray-950/95).
         void BuildCard()
         {
-            card = new View { Size = new Size(CardW, CardH), CornerRadius = Theme.RadiusLarge, BackgroundColor = MenuBack };
+            card = new View { Size = new Size(CardW, CardH), BackgroundColor = MenuBack }.Rounded(Theme.RadiusLarge);
             card.Add(NextImage(8, 8, CardImgW, CardImgH, Theme.RadiusSmall));
             card.Add(new TextLabel { Position = new Position(16, 262), Size = new Size(CardW - 32, 20), PointSize = Theme.SizeSmall, TextColor = Theme.Grey, FontStyle = Theme.SemiBold(), Text = Lang.T("player.next_title") });
             card.Add(new TextLabel { Position = new Position(16, 284), Size = new Size(CardW - 32, 32), PointSize = Theme.SizeBody, TextColor = Color.White, FontStyle = Theme.SemiBold(), Ellipsis = true, Text = Pictures.Cut(NextName(), 40) });
@@ -2511,10 +2511,10 @@ namespace NativeAIO.Screens
                 card.Add(cardBtn[i]);
             }
             cardLabel[1].Text = Lang.T("player.next_hide");
-            var track = new View { Position = new Position(12, 400), Size = new Size(CardW - 24, 4), CornerRadius = 2, BackgroundColor = Theme.Marked };
+            var track = new View { Position = new Position(12, 400), Size = new Size(CardW - 24, 4), BackgroundColor = Theme.Marked }.Rounded(2);
             card.Add(track);
             // Rétrécie vers la gauche par un agrandissement horizontal autour de son bord gauche.
-            cardFill = new View { Position = new Position(12, 400), Size = new Size(CardW - 24, 4), CornerRadius = 2, BackgroundColor = Color.White, PivotPoint = PivotPoint.TopLeft };
+            cardFill = new View { Position = new Position(12, 400), Size = new Size(CardW - 24, 4), BackgroundColor = Color.White, PivotPoint = PivotPoint.TopLeft }.Rounded(2);
             card.Add(cardFill);
             // Sans lancement automatique, pas de décompte (comme le web).
             if (!nextAuto) { track.Hide(); cardFill.Hide(); }
@@ -2875,9 +2875,9 @@ namespace NativeAIO.Screens
             int h = onBar ? 6 : 4;
             barTrack.Size = new Size(BarW, h);
             barTrack.PositionY = BarY - h / 2 + 3;
-            barTrack.CornerRadius = h / 2f;
+            barTrack.Rounded(h / 2f);
             barPlayed.Size = new Size((int)(BarW * f), h);
-            barPlayed.CornerRadius = h / 2f;
+            barPlayed.Rounded(h / 2f);
             barThumb.Position = new Position(Margin + (int)(BarW * f) - 8, BarY + 3 - 8);
             if (onBar) barThumb.Show(); else barThumb.Hide();
             playIcon.ResourceUrl = Icon(IsPlaying() ? "pause" : "play_lu");

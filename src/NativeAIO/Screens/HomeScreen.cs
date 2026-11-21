@@ -735,9 +735,8 @@ namespace NativeAIO.Screens
                 {
                     Position = new Position(i * row.Slide, FrameY(row)),
                     Size = new Size(row.CW, row.CH),
-                    CornerRadius = Radius(row),
                     BackgroundColor = Theme.Placeholder,
-                });
+                }.Rounded(Radius(row)));
             rv.Root.Add(rv.Skeleton);
             rv.SkeletonPulse = new Animation(1200) { Looping = true };
             rv.SkeletonPulse.AnimateTo(rv.Skeleton, "Opacity", 0.4f, new AlphaFunction(AlphaFunction.BuiltinFunctions.Sin));
@@ -780,15 +779,14 @@ namespace NativeAIO.Screens
             {
                 Position = new Position(0, FrameY(row)),
                 Size = new Size(cw, ch),
-                CornerRadius = Radius(row),
                 BackgroundColor = Theme.Placeholder,
                 ClippingMode = ClippingModeType.ClipChildren,
-            };
+            }.Rounded(Radius(row));
             card.Pct = it.UserData?.Played == true ? 100 : Library.Progress(it);
             if (card.Pct > 0)
             {
-                card.ProgBack = new View { BackgroundColor = new Color(0f, 0f, 0f, 0.6f), CornerRadius = ProgH / 2 };
-                card.ProgFill = new View { BackgroundColor = Theme.Accent, CornerRadius = ProgH / 2 };
+                card.ProgBack = new View { BackgroundColor = new Color(0f, 0f, 0f, 0.6f) }.Rounded(ProgH / 2);
+                card.ProgFill = new View { BackgroundColor = Theme.Accent }.Rounded(ProgH / 2);
                 card.Frame.Add(card.ProgBack);
                 card.Frame.Add(card.ProgFill);
                 PlaceProgress(card, cw, ch, Radius(row));
@@ -849,7 +847,7 @@ namespace NativeAIO.Screens
             card.TrailerRing.Hide();
             card.Root.Add(card.TrailerRing);
             card.LandBox = new View { Size = new Size(OW, OH) };
-            card.LandBack = new View { Size = new Size(OW, OH), CornerRadius = Theme.RadiusLarge, BackgroundColor = Theme.Placeholder };
+            card.LandBack = new View { Size = new Size(OW, OH), BackgroundColor = Theme.Placeholder }.Rounded(Theme.RadiusLarge);
             card.LandBox.Add(card.LandBack);
             card.LandBox.Hide();
             card.Frame.Add(card.LandBox);
@@ -881,9 +879,8 @@ namespace NativeAIO.Screens
             {
                 Position = new Position(12, 12),
                 Size = new Size((int)tw + 26, 32),
-                CornerRadius = 16,
                 BackgroundColor = Theme.Panel,
-            };
+            }.Rounded(16);
             card.Badge.Add(label);
             card.Frame.Add(card.Badge);
         }
@@ -1028,7 +1025,7 @@ namespace NativeAIO.Screens
             // compte les WebP affichés et refusés.
             if (ext == ".webp")
             {
-                var wv = new ImageView(path) { Size = new Size(w, h), CornerRadius = radius };
+                var wv = new ImageView(path) { Size = new Size(w, h) }.Rounded(radius);
                 webpTried++;
                 bool counted = false;
                 wv.ResourceReady += (s, e) =>
@@ -1040,7 +1037,7 @@ namespace NativeAIO.Screens
                 return wv;
             }
             if (ext != ".jpg" && ext != ".png") { Unreadable(what + ext); return null; }
-            var v = new ImageView(path) { Size = new Size(w, h), CornerRadius = radius };
+            var v = new ImageView(path) { Size = new Size(w, h) }.Rounded(radius);
             try
             {
                 v.DesiredWidth = w;
@@ -1310,7 +1307,7 @@ namespace NativeAIO.Screens
                 opened.Closed?.Show();
                 opened.Frame.Position = new Position(0, FrameY(row));
                 opened.Frame.Size = new Size(row.CW, row.CH);
-                opened.Frame.CornerRadius = Radius(row);
+                opened.Frame.Rounded(Radius(row));
                 PlaceProgress(opened, row.CW, row.CH, Radius(row));
                 for (int k = openedCol + 1; k < rv.Cards.Count; k++) rv.Cards[k].Root.PositionX = k * row.Slide;
             }
@@ -1375,7 +1372,7 @@ namespace NativeAIO.Screens
             EnsureOpenParts(card);
             card.Frame.Position = new Position(0, 0);
             card.Frame.Size = new Size(OW, OH);
-            card.Frame.CornerRadius = Theme.RadiusLarge;
+            card.Frame.Rounded(Theme.RadiusLarge);
             PlaceProgress(card, OW, OH, Theme.RadiusLarge);
             card.Closed?.Hide(); // sinon l'affiche se voit sous l'image en largeur pas encore arrivée
             card.LandBox.Show();

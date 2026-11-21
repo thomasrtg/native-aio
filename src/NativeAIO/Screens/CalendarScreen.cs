@@ -96,7 +96,7 @@ namespace NativeAIO.Screens
             int[] widths = { 64, 64, 220 };
             for (int i = 0; i < 3; i++)
             {
-                buttons[i] = new View { Position = new Position(x, BtnY), Size = new Size(widths[i], BtnH), CornerRadius = BtnH / 2 };
+                buttons[i] = new View { Position = new Position(x, BtnY), Size = new Size(widths[i], BtnH) }.Rounded(BtnH / 2);
                 buttonLabels[i] = new TextLabel { Size = new Size(widths[i], BtnH), PointSize = Theme.SizeBody, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
                 buttons[i].Add(buttonLabels[i]);
                 root.Add(buttons[i]);
@@ -298,9 +298,9 @@ namespace NativeAIO.Screens
             c.Ring = Theme.FocusRing(CellW, CellH, Theme.RadiusLarge);
             c.Ring.Position = new Position(-Theme.RingOut, -Theme.RingOut);
             c.Ring.Hide();
-            c.Frame = new View { Size = new Size(CellW, CellH), CornerRadius = Theme.RadiusLarge, BackgroundColor = Theme.Background };
-            c.Frame.Add(new View { Size = new Size(CellW, CellH), CornerRadius = Theme.RadiusLarge, BackgroundColor = Theme.Faint });
-            c.Dot = new View { Position = new Position(8, 8), Size = new Size(36, 36), CornerRadius = 18, BackgroundColor = Theme.Accent };
+            c.Frame = new View { Size = new Size(CellW, CellH), BackgroundColor = Theme.Background }.Rounded(Theme.RadiusLarge);
+            c.Frame.Add(new View { Size = new Size(CellW, CellH), BackgroundColor = Theme.Faint }.Rounded(Theme.RadiusLarge));
+            c.Dot = new View { Position = new Position(8, 8), Size = new Size(36, 36), BackgroundColor = Theme.Accent }.Rounded(18);
             c.Dot.Hide();
             c.Number = new TextLabel
             {
@@ -411,7 +411,7 @@ namespace NativeAIO.Screens
             if (Closed || path == null || c.Gen != g || c.Content == null) return;
             View v = Pictures.Cover(path, CellW, CellH, out ImageView img);
             if (v == null) return;
-            img.CornerRadius = Theme.RadiusLarge;
+            img.Rounded(Theme.RadiusLarge);
             c.Image = img;
             c.Content.Add(v);
             v.LowerToBottom();
@@ -536,8 +536,8 @@ namespace NativeAIO.Screens
             l.Ring = Theme.FocusRing(RW, BoxH, Theme.RadiusLarge);
             l.Ring.Position = new Position(-Theme.RingOut, -Theme.RingOut);
             l.Ring.Hide();
-            var box = new View { Size = new Size(RW, BoxH), CornerRadius = Theme.RadiusLarge, BackgroundColor = Theme.Background };
-            l.Frame = new View { Position = new Position(0, (BoxH - ThumbH) / 2), Size = new Size(ThumbW, ThumbH), CornerRadius = Theme.RadiusSmall, BackgroundColor = Theme.Placeholder };
+            var box = new View { Size = new Size(RW, BoxH), BackgroundColor = Theme.Background }.Rounded(Theme.RadiusLarge);
+            l.Frame = new View { Position = new Position(0, (BoxH - ThumbH) / 2), Size = new Size(ThumbW, ThumbH), BackgroundColor = Theme.Placeholder }.Rounded(Theme.RadiusSmall);
             bool played = it.UserData?.Played == true;
             int tx = ThumbW + 18, tw = RW - tx - 8;
             box.Add(l.Frame);
@@ -573,7 +573,7 @@ namespace NativeAIO.Screens
                         if (Closed || path == null || g != dayGen) return;
                         View v = Pictures.Cover(path, ThumbW, ThumbH, out ImageView img);
                         if (v == null) return;
-                        img.CornerRadius = Theme.RadiusSmall;
+                        img.Rounded(Theme.RadiusSmall);
                         l.Frame.Add(v);
                         Fade(img, () => 1f);
                     }));

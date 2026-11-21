@@ -14,10 +14,10 @@ namespace NativeAIO.Ui
 
         public Swatch(int d)
         {
-            View = new View { Size = new Size(d, d), CornerRadius = d / 2f };
-            fill = new View { Position = new Position(2, 2), Size = new Size(d - 4, d - 4), CornerRadius = (d - 4) / 2f };
+            View = new View { Size = new Size(d, d) }.Rounded(d / 2f);
+            fill = new View { Position = new Position(2, 2), Size = new Size(d - 4, d - 4) }.Rounded((d - 4) / 2f);
             int s = d / 2 - 2;
-            dot = new View { Position = new Position((d - 4 - s) / 2f, (d - 4 - s) / 2f), Size = new Size(s, s), CornerRadius = s / 2f };
+            dot = new View { Position = new Position((d - 4 - s) / 2f, (d - 4 - s) / 2f), Size = new Size(s, s) }.Rounded(s / 2f);
             fill.Add(dot);
             View.Add(fill);
             OnWhite(false);

@@ -52,7 +52,7 @@ namespace NativeAIO.Screens
 
         protected override void BuildMore()
         {
-            photoFrame = new View { Position = new Position(LeftX, TopY), Size = new Size(PhotoW, PhotoH), CornerRadius = 12, BackgroundColor = TileBack };
+            photoFrame = new View { Position = new Position(LeftX, TopY), Size = new Size(PhotoW, PhotoH), BackgroundColor = TileBack }.Rounded(12);
             nameLabel = new TextLabel
             {
                 Position = new Position(InfoX, TopY),
@@ -91,7 +91,7 @@ namespace NativeAIO.Screens
             if (Closed || path == null || photoFrame.ChildCount > 0) return;
             View v = Pictures.Cover(path, PhotoW, PhotoH, out ImageView img);
             if (v == null) return;
-            img.CornerRadius = 12;
+            img.Rounded(12);
             photoFrame.Add(v);
         }
 

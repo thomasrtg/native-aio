@@ -23,7 +23,7 @@ namespace NativeAIO.Ui
 
         public Highlight(float x, float width, float radius)
         {
-            View = new View { PositionX = x, Size = new Size(width, 0), CornerRadius = radius, BackgroundColor = Color.White };
+            View = new View { PositionX = x, Size = new Size(width, 0), BackgroundColor = Color.White }.Rounded(radius);
         }
 
         // Pose sans animation.

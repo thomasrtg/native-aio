@@ -57,7 +57,7 @@ namespace NativeAIO.Ui
             ring.Position = new Position(X - Theme.RingOut, TopY - Theme.RingOut);
             ring.Hide();
             View.Add(ring);
-            avatar = new View { Position = new Position(X, TopY), Size = new Size(D, D), CornerRadius = D / 2, BackgroundColor = Theme.Accent };
+            avatar = new View { Position = new Position(X, TopY), Size = new Size(D, D), BackgroundColor = Theme.Accent }.Rounded(D / 2);
             initial = new TextLabel
             {
                 Size = new Size(D, D),
@@ -78,7 +78,7 @@ namespace NativeAIO.Ui
             Add("calendar", "nav_calendar", "nav.calendar", () => new CalendarScreen(), FirstY + 5 * Step);
             Add("settings", "nav_cog", "nav.settings", () => new SettingsScreen(), BottomY);
 
-            tip = new View { Size = new Size(200, TipH), CornerRadius = Theme.RadiusLarge, BackgroundColor = Theme.Panel };
+            tip = new View { Size = new Size(200, TipH), BackgroundColor = Theme.Panel }.Rounded(Theme.RadiusLarge);
             tipLabel = new TextLabel { Size = new Size(200, TipH), PointSize = Theme.SizeBody, TextColor = Color.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
             tip.Add(tipLabel);
             tip.Hide();
@@ -88,7 +88,7 @@ namespace NativeAIO.Ui
         void Add(string section, string icon, string textKey, Func<Screen> make, int y)
         {
             var e = new Entry { Section = section, TextKey = textKey, Make = make, Y = y };
-            e.Box = new View { Position = new Position(X, y), Size = new Size(D, D), CornerRadius = D / 2 };
+            e.Box = new View { Position = new Position(X, y), Size = new Size(D, D) }.Rounded(D / 2);
             int o = (D - IconSize) / 2;
             e.Light = new ImageView { Position = new Position(o, o), Size = new Size(IconSize, IconSize), ResourceUrl = Theme.IconPath(icon) };
             e.Dark = new ImageView { Position = new Position(o, o), Size = new Size(IconSize, IconSize), ResourceUrl = Theme.IconPath(icon + "_dark") };
@@ -125,7 +125,7 @@ namespace NativeAIO.Ui
             if (url == null || userShown != Session.UserId || url == photoUrl) return;
             photoUrl = url;
             // Comme « Qui regarde ? » : image distante sans DesiredWidth/Height (plante sinon).
-            photo = new ImageView { Size = new Size(D, D), ResourceUrl = url, CornerRadius = D / 2 };
+            photo = new ImageView { Size = new Size(D, D), ResourceUrl = url }.Rounded(D / 2);
             avatar.Add(photo);
         }
 

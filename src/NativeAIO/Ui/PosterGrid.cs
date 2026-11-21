@@ -458,9 +458,9 @@ namespace NativeAIO.Ui
                 PositionUsesPivotPoint = false,
             };
             // Contour du focus (charte) : blanc de 3 px, liseré sombre de 3 px, arrondi 8 + 6.
-            var ring = new View { Position = new Position(-6, -6), Size = new Size(TileW + 12, ImageH + 12), CornerRadius = 14, BackgroundColor = Color.White };
-            ring.Add(new View { Position = new Position(3, 3), Size = new Size(TileW + 6, ImageH + 6), CornerRadius = 11, BackgroundColor = Back });
-            t.Frame = new View { Size = new Size(TileW, ImageH), CornerRadius = 8, BackgroundColor = TileBack };
+            var ring = new View { Position = new Position(-6, -6), Size = new Size(TileW + 12, ImageH + 12), BackgroundColor = Color.White }.Rounded(14);
+            ring.Add(new View { Position = new Position(3, 3), Size = new Size(TileW + 6, ImageH + 6), BackgroundColor = Back }.Rounded(11));
+            t.Frame = new View { Size = new Size(TileW, ImageH), BackgroundColor = TileBack }.Rounded(8);
             t.Root.Add(ring);
             t.Root.Add(t.Frame);
             pane.Add(t.Root);
@@ -500,7 +500,7 @@ namespace NativeAIO.Ui
 
         static View Check(int x, int y)
         {
-            var b = new View { Name = CardMenu.CheckName, Position = new Position(x, y), Size = new Size(40, 32), CornerRadius = 16, BackgroundColor = Theme.Accent }; // accent du thème (module 14)
+            var b = new View { Name = CardMenu.CheckName, Position = new Position(x, y), Size = new Size(40, 32), BackgroundColor = Theme.Accent }.Rounded(16); // accent du thème (module 14)
             b.Add(new TextLabel { Size = new Size(40, 32), PointSize = Theme.SizeSmall, TextColor = Theme.OnAccent, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Text = "✓" });
             return b;
         }
@@ -520,7 +520,7 @@ namespace NativeAIO.Ui
             if (Closed || path == null || t.Frame == null || t.Dead) return;
             View v = Pictures.Cover(path, TileW, ImageH, out ImageView img);
             if (v == null) return;
-            img.CornerRadius = 8; // images arrondies au décodage (charte)
+            img.Rounded(8); // images arrondies au décodage (charte)
             t.Frame.Add(v);
             v.LowerToBottom();
             Fade(img);

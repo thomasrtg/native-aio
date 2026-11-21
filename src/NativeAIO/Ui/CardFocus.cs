@@ -20,7 +20,7 @@ namespace NativeAIO.Ui
         // x, width : colonne des cartes dans parent ; radius : arrondi des cartes.
         public CardFocus(View parent, float x, int width, int radius)
         {
-            dim = new View { PositionX = x, Size = new Size(width, 0), CornerRadius = radius, BackgroundColor = Theme.Shade, Opacity = 0f };
+            dim = new View { PositionX = x, Size = new Size(width, 0), BackgroundColor = Theme.Shade, Opacity = 0f }.Rounded(radius);
             ring = Theme.HollowRing(width, 0, radius);
             ring.PositionX = x - Theme.RingOut;
             ring.Opacity = 0f;

@@ -65,7 +65,7 @@ namespace NativeAIO.Ui
         public static ImageView Circle(string path, int d)
         {
             if (path == null) return null;
-            var v = new ImageView(path) { Size = new Size(d, d), CornerRadius = d / 2f };
+            var v = new ImageView(path) { Size = new Size(d, d) }.Rounded(d / 2f);
             try
             {
                 v.FittingMode = FittingModeType.ScaleToFill;

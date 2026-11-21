@@ -90,8 +90,8 @@ namespace NativeAIO.Ui
             clip.Add(list);
             parent.Add(clip);
             // Curseur de défilement : rail à 4 %, curseur à 35 %.
-            bar = new View { Position = new Position(barX, listTop), Size = new Size(4, listH), CornerRadius = 2f, BackgroundColor = Theme.Faint };
-            thumb = new View { Size = new Size(4, 48), CornerRadius = 2f, BackgroundColor = Theme.Faded };
+            bar = new View { Position = new Position(barX, listTop), Size = new Size(4, listH), BackgroundColor = Theme.Faint }.Rounded(2f);
+            thumb = new View { Size = new Size(4, 48), BackgroundColor = Theme.Faded }.Rounded(2f);
             bar.Hide();
             bar.Add(thumb);
             parent.Add(bar);
@@ -237,7 +237,7 @@ namespace NativeAIO.Ui
             Row r = rows[built];
             r.Y = built == 0 ? 0 : rows[built - 1].Y + rows[built - 1].H + Gap;
             // Grossie autour de son centre sans changer de place (comme la grille de Découvrir).
-            r.Box = new View { Position = new Position(left, r.Y), CornerRadius = Theme.RadiusLarge };
+            r.Box = new View { Position = new Position(left, r.Y) }.Rounded(Theme.RadiusLarge);
             r.H = r.Notice ? BuildNotice(r) : BuildVersion(r);
             Probe.Log("vlist", "carte " + built + " créée"); // repère dans le journal de la sonde
             r.Box.Size = new Size(width, r.H);
@@ -256,7 +256,7 @@ namespace NativeAIO.Ui
             name = name.Trim();
             string desc = r.Source.Aio?.Description?.Trim();
             r.Box.BackgroundColor = Theme.Surface;
-            r.Round = new View { Position = new Position(In, In), Size = new Size(Circle, Circle), CornerRadius = Circle / 2f, BackgroundColor = Theme.Surface };
+            r.Round = new View { Position = new Position(In, In), Size = new Size(Circle, Circle), BackgroundColor = Theme.Surface }.Rounded(Circle / 2f);
             r.Play = new ImageView { ResourceUrl = Theme.IconPath("play_small"), Size = new Size(IconSize, IconSize), Position = new Position((Circle - IconSize) / 2, (Circle - IconSize) / 2), Color = Color.White };
             r.Round.Add(r.Play);
             r.Box.Add(r.Round);
@@ -266,7 +266,7 @@ namespace NativeAIO.Ui
                 // Pastille blanche comme le web (« Lecture en cours ») ; largeur estimée à 6 px par
                 // caractère en 12 pt demi-gras (8 px laissait trop de blanc, sonde du 2026-11-19).
                 string badge = Lang.T("player.version_current");
-                var pill = new View { Position = new Position(textX, h), Size = new Size(24 + badge.Length * 6, BadgeH), CornerRadius = BadgeH / 2f, BackgroundColor = Color.White };
+                var pill = new View { Position = new Position(textX, h), Size = new Size(24 + badge.Length * 6, BadgeH), BackgroundColor = Color.White }.Rounded(BadgeH / 2f);
                 pill.Add(new TextLabel { Size = new Size(24 + badge.Length * 6, BadgeH), PointSize = Theme.SizeSmall, TextColor = Theme.Ink, FontStyle = Theme.SemiBold(), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Text = badge });
                 r.Box.Add(pill);
                 h += BadgeH + 6;

@@ -172,7 +172,7 @@ namespace NativeAIO.Ui
         {
             var b = new Btn
             {
-                Box = new View { PositionY = buttonsY, Size = new Size(200, Theme.ButtonHeight), CornerRadius = Theme.ButtonHeight / 2 },
+                Box = new View { PositionY = buttonsY, Size = new Size(200, Theme.ButtonHeight) }.Rounded(Theme.ButtonHeight / 2),
                 Icon = new ImageView(Theme.IconPath(icon)) { Position = new Position(24, (Theme.ButtonHeight - IconSize) / 2), Size = new Size(IconSize, IconSize) },
                 Label = new TextLabel { Position = new Position(24 + IconSize + 12, 0), Size = new Size(200, Theme.ButtonHeight), PointSize = Theme.SizeBody, VerticalAlignment = VerticalAlignment.Center, TextColor = Theme.Text },
             };
@@ -197,7 +197,7 @@ namespace NativeAIO.Ui
             if (items.Count > 1)
                 for (int i = 0; i < items.Count; i++)
                 {
-                    var d = new View { Size = new Size(6, 6), CornerRadius = 3 };
+                    var d = new View { Size = new Size(6, 6) }.Rounded(3);
                     dots.Add(d);
                     dotViews.Add(d);
                 }

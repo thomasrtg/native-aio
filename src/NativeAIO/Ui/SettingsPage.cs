@@ -82,7 +82,7 @@ namespace NativeAIO.Ui
             View.Size = new Size(Width, 0);
             View.Add(light.View); // sous les cartes
             light.View.Hide();
-            iconBox = new View { Size = new Size(HeaderH, HeaderH), CornerRadius = 12, BackgroundColor = Theme.AccentA(0.15f) };
+            iconBox = new View { Size = new Size(HeaderH, HeaderH), BackgroundColor = Theme.AccentA(0.15f) }.Rounded(12);
             // Icône blanche teintée par la couleur de mélange.
             this.icon = new ImageView { Position = new Position(12, 12), Size = new Size(32, 32), ResourceUrl = Theme.IconPath("set_" + icon + "_big"), Color = Theme.Accent };
             iconBox.Add(this.icon);
@@ -100,7 +100,7 @@ namespace NativeAIO.Ui
             var s = new Section { Title = title, Precision = precision };
             if (title != null) { s.TitleLabel = new TextLabel { Size = new Size(Width, SectionTitleH), PointSize = 18, TextColor = Color.White }; View.Add(s.TitleLabel); }
             if (precision != null) { s.PrecisionLabel = new TextLabel { Size = new Size(Width, PrecisionH), PointSize = 15, TextColor = Theme.Grey, Ellipsis = true }; View.Add(s.PrecisionLabel); }
-            s.Card = new View { Size = new Size(Width, 0), CornerRadius = 12, BackgroundColor = Theme.White(0.04f) };
+            s.Card = new View { Size = new Size(Width, 0), BackgroundColor = Theme.White(0.04f) }.Rounded(12);
             View.Add(s.Card);
             sections.Add(s);
         }
@@ -200,8 +200,8 @@ namespace NativeAIO.Ui
             switch (r.Kind)
             {
                 case Kind.Toggle:
-                    r.Track = new View { Size = new Size(TrackW, TrackH), CornerRadius = TrackH / 2 };
-                    r.Knob = new View { Position = new Position(4, 4), Size = new Size(Knob, Knob), CornerRadius = Knob / 2, BackgroundColor = Color.White };
+                    r.Track = new View { Size = new Size(TrackW, TrackH) }.Rounded(TrackH / 2);
+                    r.Knob = new View { Position = new Position(4, 4), Size = new Size(Knob, Knob), BackgroundColor = Color.White }.Rounded(Knob / 2);
                     r.Track.Add(r.Knob);
                     r.Box.Add(r.Track);
                     break;
@@ -211,7 +211,7 @@ namespace NativeAIO.Ui
                     r.Box.Add(r.Chevron);
                     break;
                 case Kind.Choice:
-                    r.Pill = new View { Size = new Size(ControlW, PillH), CornerRadius = PillH / 2 };
+                    r.Pill = new View { Size = new Size(ControlW, PillH) }.Rounded(PillH / 2);
                     r.ValueLabel = new TextLabel { Position = new Position(20, 0), Size = new Size(ControlW - 64, PillH), PointSize = 18, VerticalAlignment = VerticalAlignment.Center, Ellipsis = true };
                     r.Chevron = new TextLabel { Text = "›", Position = new Position(ControlW - 40, 0), Size = new Size(24, PillH), PointSize = 18, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
                     r.Pill.Add(r.ValueLabel);
@@ -219,7 +219,7 @@ namespace NativeAIO.Ui
                     r.Box.Add(r.Pill);
                     break;
                 case Kind.Button:
-                    r.Pill = new View { Size = new Size(ControlW, PillH), CornerRadius = PillH / 2 };
+                    r.Pill = new View { Size = new Size(ControlW, PillH) }.Rounded(PillH / 2);
                     r.ValueLabel = new TextLabel { Size = new Size(ControlW, PillH), PointSize = 18, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Ellipsis = true };
                     r.Pill.Add(r.ValueLabel);
                     r.Box.Add(r.Pill);

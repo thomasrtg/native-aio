@@ -152,7 +152,7 @@ namespace NativeAIO.Screens
             left = new View { Size = new Size(RightX - 24, 1080) };
             root.Add(left);
             fiche = new View { Position = new Position(KbX, FicheY), Size = new Size(KbW, 1080 - FicheY) };
-            ficheFrame = new View { Size = new Size(KbW, FicheH), CornerRadius = Theme.RadiusLarge, BackgroundColor = Theme.Placeholder };
+            ficheFrame = new View { Size = new Size(KbW, FicheH), BackgroundColor = Theme.Placeholder }.Rounded(Theme.RadiusLarge);
 #pragma warning disable CS0618 // ShadowOffset/ShadowColor : dépréciés en API 8, toujours présents (comme l'accueil)
             ficheTitle = new TextLabel
             {
@@ -173,7 +173,7 @@ namespace NativeAIO.Screens
             fiche.Add(ficheText);
             fiche.Hide();
             left.Add(fiche);
-            var textBox = new View { Position = new Position(KbX, TextY), Size = new Size(KbW, TextH), CornerRadius = Theme.RadiusLarge, BackgroundColor = Theme.Surface };
+            var textBox = new View { Position = new Position(KbX, TextY), Size = new Size(KbW, TextH), BackgroundColor = Theme.Surface }.Rounded(Theme.RadiusLarge);
             shown = new TextLabel { Position = new Position(24, 0), Size = new Size(KbW - 48, TextH), PointSize = Theme.SizeHeading, VerticalAlignment = VerticalAlignment.Center };
             textBox.Add(shown);
             left.Add(textBox);
@@ -307,8 +307,7 @@ namespace NativeAIO.Screens
             {
                 Position = new Position(KbX + k.Col * Pitch, KbY + k.Row * Pitch),
                 Size = new Size(k.Span * Pitch - (Pitch - KeyW), KeyW),
-                CornerRadius = KeyW / 2f, // capsule (charte) : rondes pour une seule touche
-            };
+            }.Rounded(KeyW / 2f); // capsule (charte) : rondes pour une seule touche
             k.Label = new TextLabel
             {
                 Size = new Size(k.Span * Pitch - (Pitch - KeyW), KeyW),
@@ -795,7 +794,7 @@ namespace NativeAIO.Screens
         {
             var c = new Chip { Term = term };
             c.Label = new TextLabel { Position = new Position(24, 0), PointSize = Theme.SizeBody, VerticalAlignment = VerticalAlignment.Center, Text = text };
-            c.Box = new View { Position = new Position(x, ChipsY), CornerRadius = ChipH / 2f };
+            c.Box = new View { Position = new Position(x, ChipsY) }.Rounded(ChipH / 2f);
             c.Box.Add(c.Label);
             pane.Add(c.Box);
             // Largeur du texte : demandée à la TV (quelques pastilles courtes seulement).
@@ -949,7 +948,7 @@ namespace NativeAIO.Screens
             };
             t.Ring = Theme.FocusRing(w, s.ImageH, round ? w / 2 : Theme.RadiusSmall);
             t.Ring.Position = new Position(x - Theme.RingOut, -Theme.RingOut);
-            t.Frame = new View { Position = new Position(x, 0), Size = new Size(w, s.ImageH), CornerRadius = round ? w / 2 : Theme.RadiusSmall, BackgroundColor = Theme.Placeholder };
+            t.Frame = new View { Position = new Position(x, 0), Size = new Size(w, s.ImageH), BackgroundColor = Theme.Placeholder }.Rounded(round ? w / 2 : Theme.RadiusSmall);
             t.Ring.Hide();
             t.Root.Add(t.Ring);
             t.Root.Add(t.Frame);
@@ -994,7 +993,7 @@ namespace NativeAIO.Screens
 
         static View Check(int x, int y)
         {
-            var b = new View { Name = CardMenu.CheckName, Position = new Position(x, y), Size = new Size(40, 32), CornerRadius = 16, BackgroundColor = Theme.Accent };
+            var b = new View { Name = CardMenu.CheckName, Position = new Position(x, y), Size = new Size(40, 32), BackgroundColor = Theme.Accent }.Rounded(16);
             b.Add(new TextLabel { Size = new Size(40, 32), PointSize = Theme.SizeSmall, TextColor = Theme.OnAccent, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Text = "✓" });
             return b;
         }
@@ -1021,7 +1020,7 @@ namespace NativeAIO.Screens
             }
             View v = Pictures.Cover(path, s.TileW, s.ImageH, out ImageView img);
             if (v == null) return;
-            img.CornerRadius = Theme.RadiusSmall; // images arrondies au décodage (charte, comme Favoris)
+            img.Rounded(Theme.RadiusSmall); // images arrondies au décodage (charte, comme Favoris)
             t.Frame.Add(v);
             v.LowerToBottom();
             Fade(img);

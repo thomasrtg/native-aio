@@ -105,7 +105,7 @@ namespace NativeAIO.Screens
             {
                 List<Category> list = cats.FindAll(c => c.Watching == watching);
                 int h = GroupPad + GroupLabelH + list.Count * EntryH + GroupPad;
-                root.Add(new View { Position = new Position(X0, y), Size = new Size(ColW, h), CornerRadius = 12 + GroupPad, BackgroundColor = Theme.White(0.04f) });
+                root.Add(new View { Position = new Position(X0, y), Size = new Size(ColW, h), BackgroundColor = Theme.White(0.04f) }.Rounded(12 + GroupPad));
                 var label = new TextLabel { Position = new Position(X0 + GroupPad + 16, y + GroupPad), Size = new Size(ColW - 2 * GroupPad - 32, GroupLabelH), PointSize = 12, TextColor = Theme.Grey, VerticalAlignment = VerticalAlignment.Center };
                 groupLabels.Add(label);
                 labels.Add(label);
@@ -118,7 +118,7 @@ namespace NativeAIO.Screens
             foreach (View l in labels) root.Add(l);
             foreach (Category c in cats)
             {
-                c.Box = new View { Position = new Position(X0 + GroupPad, c.Y), Size = new Size(ColW - 2 * GroupPad, EntryH), CornerRadius = 12 };
+                c.Box = new View { Position = new Position(X0 + GroupPad, c.Y), Size = new Size(ColW - 2 * GroupPad, EntryH) }.Rounded(12);
                 c.Light = new ImageView { Position = new Position(16, 14), Size = new Size(28, 28), ResourceUrl = Theme.IconPath("set_" + c.Icon) };
                 c.Dark = new ImageView { Position = new Position(16, 14), Size = new Size(28, 28), ResourceUrl = Theme.IconPath("set_" + c.Icon + "_dark") };
                 c.Name = new TextLabel { Position = new Position(60, 0), Size = new Size(ColW - 2 * GroupPad - 72, EntryH), PointSize = 18, VerticalAlignment = VerticalAlignment.Center, Ellipsis = true };
@@ -629,7 +629,7 @@ namespace NativeAIO.Screens
         View Preview()
         {
             float w = SettingsPage.Width - 48, h = PreviewH - 48;
-            var box = new View { Position = new Position(24, 24), Size = new Size(w, h), CornerRadius = 10, BackgroundColor = new Color(0.22f, 0.25f, 0.32f, 1f), ClippingMode = ClippingModeType.ClipChildren };
+            var box = new View { Position = new Position(24, 24), Size = new Size(w, h), BackgroundColor = new Color(0.22f, 0.25f, 0.32f, 1f), ClippingMode = ClippingModeType.ClipChildren }.Rounded(10);
             box.Add(Gradient.Make(new Position(0, 0), new Size(w, h), true, t => 0.85f * t));
             var look = new SubtitleLook(w - 80, h - 40, 0.6f);
             look.View.Position = new Position(40, 0);
@@ -837,7 +837,7 @@ namespace NativeAIO.Screens
         View UserPicture()
         {
             const int D = 56;
-            var box = new View { Size = new Size(D, D), CornerRadius = D / 2, BackgroundColor = Theme.Accent };
+            var box = new View { Size = new Size(D, D), BackgroundColor = Theme.Accent }.Rounded(D / 2);
             string name = Session.UserName ?? "";
             userInitial = new TextLabel
             {
@@ -861,7 +861,7 @@ namespace NativeAIO.Screens
             catch (Exception) { }
             if (url == null || Closed) return;
             // Image distante sans DesiredWidth/Height (plante sinon, LECONS.md).
-            box.Add(new ImageView { Size = new Size(d, d), ResourceUrl = url, CornerRadius = d / 2 });
+            box.Add(new ImageView { Size = new Size(d, d), ResourceUrl = url }.Rounded(d / 2));
         }
 
         // ---- À propos ----
