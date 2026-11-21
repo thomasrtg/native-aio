@@ -1,0 +1,30 @@
+<Project Sdk="Tizen.NET.Sdk/1.1.9">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- TV Tizen 6.0 : API 8. -->
+    <TargetFramework>tizen80</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>NativeAIO</AssemblyName>
+    <RootNamespace>NativeAIO</RootNamespace>
+    <!-- Sonde de développement (Core/Probe.cs) : seulement dans un paquet de test,
+         construit avec « -p:Probe=true ». Le paquet publié ne la contient pas. -->
+    <DefineConstants Condition="'$(Probe)' == 'true'">$(DefineConstants);PROBE</DefineConstants>
+    <!-- Paquet de test à part, pour ne jamais le confondre avec celui qu'on publie :
+         bin/probe/Release/tizen80/io.github.thomasrtg.nativeaio-<version>-probe.tpk -->
+    <BaseOutputPath Condition="'$(Probe)' == 'true'">bin\probe\</BaseOutputPath>
+    <!-- Dossier de travail à part aussi : sinon le nettoyage d'une construction efface le paquet de l'autre. -->
+    <IntermediateOutputPath Condition="'$(Probe)' == 'true'">obj\probe\$(Configuration)\</IntermediateOutputPath>
+    <!-- Chemins du PC de construction remplacés dans le .dll et le .pdb publiés. -->
+    <Deterministic>true</Deterministic>
+    <PathMap>$(MSBuildProjectDirectory)=/NativeAIO</PathMap>
+  </PropertyGroup>
+
+  <!-- Nom du paquet de test : « -probe » ajouté au nom calculé par Tizen.NET.Sdk. -->
+  <Target Name="NameProbePackage" AfterTargets="_TizenResolveTpkPackageName" Condition="'$(Probe)' == 'true'">
+    <PropertyGroup>
+      <SignedTpkFile>$(OutputPath)$(TizenPackageName)-$(TizenPackageVersion)-probe$(TpkFileExt)</SignedTpkFile>
+    </PropertyGroup>
+  </Target>
+
+</Project>

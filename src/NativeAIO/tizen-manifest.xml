@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest package="io.github.thomasrtg.nativeaio" version="1.0.0" api-version="6.0" xmlns="http://tizen.org/ns/packages">
+  <profile name="tv" />
+  <ui-application appid="io.github.thomasrtg.nativeaio" exec="NativeAIO.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet" launch_mode="single">
+    <label>Native AIO</label>
+    <icon>nativeaio.png</icon>
+    <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true" />
+    <!-- Image de lancement à la place de l'écran bleu de la TV (module 15, LECONS.md) : tools/splash.mjs.
+         src = nom seul, cherché dans shared/res (un chemin depuis la racine du paquet est ignoré). -->
+    <splash-screens>
+      <splash-screen src="splash.png" type="img" orientation="landscape" indicator-display="false" />
+    </splash-screens>
+  </ui-application>
+  <privileges>
+    <privilege>http://tizen.org/privilege/internet</privilege>
+    <privilege>http://tizen.org/privilege/tv.inputdevice</privilege>
+  </privileges>
+</manifest>
