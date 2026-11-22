@@ -17,7 +17,7 @@ namespace NativeAIO
     class App : NUIApplication
     {
         public const string DisplayName = "Native AIO"; // nom affiché (module 15)
-        public const string AppVersion = "1.0.1"; // à garder égale à celle de tizen-manifest.xml
+        public const string AppVersion = "1.0.2"; // à garder égale à celle de tizen-manifest.xml
         public static new App Current { get; private set; }
 
         Navigator nav;

@@ -235,13 +235,25 @@ namespace NativeAIO.Core
                         await Send(res, "ok");
                         ui.Post(_ => throw new InvalidOperationException("essai du rapport de plantage (sonde)"), null);
                         break;
+                    case "/text":
+                        // Remplit le champ de saisie qui a le focus (émulateur : clavier du PC mal transmis).
+                        // La valeur n'est pas écrite dans le journal (adresse de serveur, mot de passe).
+                        string v = q["v"] ?? "";
+                        await Send(res, await OnUi(() =>
+                        {
+                            if (!(FocusManager.Instance.GetCurrentFocusView() is Tizen.NUI.BaseComponents.TextField f))
+                                return "aucun champ de saisie ouvert";
+                            f.Text = v;
+                            return "ok";
+                        }));
+                        break;
                     case "/quit":
                         await Send(res, "ok");
                         ui.Post(_ => App.Current.Exit(), null);
                         break;
                     default:
                         res.StatusCode = 404;
-                        await Send(res, "/metrics /events?since=N /key?k=Down /shot /gc /reset /quit /open?id= /play?id=&max= /home /crash");
+                        await Send(res, "/metrics /events?since=N /key?k=Down /shot /gc /reset /quit /open?id= /play?id=&max= /home /crash /text?v=");
                         break;
                 }
             }

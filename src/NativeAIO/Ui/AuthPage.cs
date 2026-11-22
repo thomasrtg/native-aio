@@ -170,6 +170,9 @@ namespace NativeAIO.Ui
                 VerticalAlignment = VerticalAlignment.Center,
                 PrimaryCursorColor = new Vector4(1f, 1f, 1f, 1f),
                 Focusable = true,
+                // Sans réglage, la frappe s'arrête à 50 caractères : trop court pour l'adresse
+                // longue que propose AIOStreams (/jellyfin/<uuid>/<mot de passe chiffré>).
+                MaxLength = 1000,
                 Text = text ?? "",
             };
             var im = new InputMethod
