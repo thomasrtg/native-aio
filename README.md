@@ -31,12 +31,13 @@ The player screenshot is a composite: the TV does not capture video, so the real
 - Search with an on-screen keyboard (QWERTY or AZERTY), Discover (catalogues and filters), Calendar, Favourites, History, person pages.
 - Long press OK on a card for its menu (play, choose a version, mark watched, remove from "Continue watching", favourites).
 - Settings that follow the AIOStreams web app, themes, English and French interface.
+- Optional spoiler protection: episodes you haven't started show a blurred picture, without their title and description, until you select them.
 - Crash report: after an unexpected close, the app offers a QR code that opens a prefilled GitHub issue on your phone. The TV sends nothing; you read the report before posting it.
 
 ## Requirements
 
 - An AIOStreams server with its Jellyfin-compatible API ("Jellyfin apps" in the AIOStreams configuration).
-- A Samsung TV running Tizen. Native AIO targets Tizen 6.0 (2021 models) and later; it has only been tested on one 2021 model running Tizen 6.0.
+- A Samsung TV running Tizen. Native AIO targets Tizen 6.0 (2021 models) and later. The author tests it on one 2021 model running Tizen 6.0. A user reports that it works on a 2024 model running Tizen 9 (exact model and extent of testing unknown). Other models and Tizen versions are untested.
 
 ## Install
 
