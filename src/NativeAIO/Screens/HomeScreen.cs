@@ -93,6 +93,7 @@ namespace NativeAIO.Screens
             public bool Near;
             public bool LandReady, LandFailed, ClosedReady, LogoReady, LogoFailed;
             public bool TitleInImage; // vignette « Thumb » : le titre est déjà dessiné dans l'image
+            public bool Veiled; // carte fermée : copie floue de l'image de l'épisode (Ui/Spoilers.cs)
             public long ClosedAt, LandAt; // fichier confié à la TV : mesure de sa préparation
         }
 
@@ -141,6 +142,7 @@ namespace NativeAIO.Screens
         View heroSlot;
         bool onHero; // la bannière a le focus (ou l'aurait, hors barre latérale)
         string heroSeen; // réglage « Bannière à la une » au chargement
+        bool blurSeen;   // réglage « Flouter les épisodes pas encore commencés » au chargement
         bool follow; // la bannière suit la carte regardée (dans le coin ou non)
         Card lit; // carte regardée quand la bannière la suit (fermée, contour, grossie)
         Card Focused => follow ? lit : opened; // carte dont la bande-annonce peut se voir
@@ -297,6 +299,7 @@ namespace NativeAIO.Screens
             clock.Restart();
             merged = Prefs.MergeNextUp;
             heroSeen = Prefs.Hero;
+            blurSeen = Prefs.BlurSpoilers;
             follow = heroSeen == "follow" || heroSeen == "corner";
             // Demandes déjà lancées par l'écran de démarrage (Prepare), si elles valent encore.
             Early pre = TakeEarly(merged);
@@ -953,6 +956,19 @@ namespace NativeAIO.Screens
             if (card.Dead) return;
             if (path == null) { card.ClosedReady = true; return; }
             Row row = rows[card.Row];
+            // Flou des épisodes pas commencés : la carte fermée d'une rangée en largeur montre
+            // l'image propre à l'épisode (1re image essayée) ; elle prend sa copie floue. La
+            // carte ouverte, celle qui a le focus, la montre nette (comme le web). Échec : rien.
+            if (row.Wide && !card.Veiled && card.LandTry == 0 && card.Item.ImageTags?.Primary != null && Spoilers.Hidden(card.Item))
+            {
+                card.Veiled = true;
+                Spoilers.Request(path, file => Guard("Veil", () =>
+                {
+                    if (file != null) OnPosterFile(card, file);
+                    else card.ClosedReady = true;
+                }));
+                return;
+            }
             card.Closed = Decoded(path, row.CW, row.CH, "", Radius(row));
             if (card.Closed == null) { card.ClosedReady = true; return; }
             card.ClosedAt = Now;
@@ -1859,7 +1875,7 @@ namespace NativeAIO.Screens
         async void Refresh()
         {
             if (refreshing) return;
-            if (Prefs.MergeNextUp != merged || Prefs.Hero != heroSeen) { Guard("Refresh", Reload); return; }
+            if (Prefs.MergeNextUp != merged || Prefs.Hero != heroSeen || Prefs.BlurSpoilers != blurSeen) { Guard("Refresh", Reload); return; }
             refreshing = true;
             int g = gen;
             List<Item> c, n, up;

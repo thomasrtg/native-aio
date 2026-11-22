@@ -55,6 +55,7 @@ namespace NativeAIO.Screens
         {
             public Item Item;
             public View Root, Ring, Frame;
+            public Spoilers.Veil Veil; // flou des épisodes pas commencés (Ui/Spoilers.cs)
         }
 
         View root, listView;
@@ -403,12 +404,20 @@ namespace NativeAIO.Screens
             int g = c.Gen;
             imagesAsked++;
             ImageCache.RequestAny(urls, () => Closed || c.Gen != g ? int.MaxValue : 10 + Math.Abs(c.Index - focus),
-                path => Guard("CellImage", () => OnCellFile(c, g, path)));
+                path => Guard("CellImage", () => OnCellFile(c, g, path, it)));
         }
 
-        void OnCellFile(Cell c, int g, string path)
+        void OnCellFile(Cell c, int g, string path, Item it, bool veiled = false)
         {
             if (Closed || path == null || c.Gen != g || c.Content == null) return;
+            // Flou des épisodes pas commencés : la case montre la copie floue de l'image de
+            // l'épisode, même regardée (le web la montre nette au survol ou au focus de la case ;
+            // ici, la ligne regardée dans la liste du jour la montre nette). Échec : pas d'image.
+            if (!veiled && it.ImageTags?.Primary != null && Spoilers.Hidden(it))
+            {
+                Spoilers.Request(path, file => Guard("CellVeil", () => OnCellFile(c, g, file, it, true)));
+                return;
+            }
             View v = Pictures.Cover(path, CellW, CellH, out ImageView img);
             if (v == null) return;
             img.Rounded(Theme.RadiusLarge);
@@ -541,6 +550,8 @@ namespace NativeAIO.Screens
             bool played = it.UserData?.Played == true;
             int tx = ThumbW + 18, tw = RW - tx - 8;
             box.Add(l.Frame);
+            int gen = dayGen;
+            l.Veil = new Spoilers.Veil(l.Frame, ThumbW, ThumbH, Theme.RadiusSmall, Spoilers.Hidden(it), () => Closed || gen != dayGen, Guard);
             box.Add(new TextLabel
             {
                 Position = new Position(tx, 8),
@@ -550,15 +561,17 @@ namespace NativeAIO.Screens
                 TextColor = played ? Theme.Grey : Color.White,
                 Text = Library.Title(it),
             });
-            box.Add(new TextLabel
+            var second = new TextLabel
             {
                 Position = new Position(tx, 44),
                 Size = new Size(tw, 56),
                 PointSize = Theme.SizeInfo,
                 MultiLine = true,
                 TextColor = Theme.Grey,
-                Text = LineText(it),
-            });
+                Text = LineText(it, true),
+            };
+            box.Add(second);
+            l.Veil.Texts = shown => second.Text = LineText(it, shown);
             l.Root.Add(l.Ring);
             l.Root.Add(box);
             listView.Add(l.Root);
@@ -575,20 +588,22 @@ namespace NativeAIO.Screens
                         if (v == null) return;
                         img.Rounded(Theme.RadiusSmall);
                         l.Frame.Add(v);
+                        if (it.ImageTags?.Primary != null && l.Veil.Take(img, path)) { imagesShown++; return; }
                         Fade(img, () => 1f);
                     }));
             }
             return l;
         }
 
-        // « S02E09 · Nervous Breakdown », puis l'heure de sortie et « Vu ».
-        static string LineText(Item it)
+        // « S02E09 · Nervous Breakdown », puis l'heure de sortie et « Vu ». Épisode caché (flou
+        // des épisodes pas commencés, hors sélection) : « S02E09 » seul.
+        static string LineText(Item it, bool shown)
         {
             string first;
             if (it.Type == "Episode")
             {
                 string code = Library.Code(it);
-                first = code != null && !string.IsNullOrEmpty(it.Name) ? code + " · " + it.Name : code ?? it.Name ?? "";
+                first = !shown ? code ?? "" : code != null && !string.IsNullOrEmpty(it.Name) ? code + " · " + it.Name : code ?? it.Name ?? "";
             }
             else first = Lang.T("calendar.movie") + (it.ProductionYear != null ? " · " + it.ProductionYear : "");
             var second = new List<string>();
@@ -602,8 +617,10 @@ namespace NativeAIO.Screens
         {
             for (int i = 0; i < lines.Count; i++)
             {
-                if (zone == Zone.List && i == listFocus) lines[i].Ring.Show();
+                bool on = zone == Zone.List && i == listFocus;
+                if (on) lines[i].Ring.Show();
                 else lines[i].Ring.Hide();
+                lines[i].Veil?.Paint(on);
             }
             // La ligne regardée reste entière à l'écran.
             int visible = (ListBottom - ListY) / LineH;

@@ -253,6 +253,8 @@ namespace NativeAIO.Core
         public static readonly string[] PosterSizes = { "small", "medium", "large" };
         public static bool MergeNextUp { get => Flag("mergeNextUp", false); set => SetFlag("mergeNextUp", value, false); }
         public static bool CombineSearch { get => Flag("combineSearch", false); set => SetFlag("combineSearch", value, false); }
+        // Flou des épisodes pas commencés (web : settings.interface.blurSpoilers), non par défaut.
+        public static bool BlurSpoilers { get => Flag("blurSpoilers", false); set => SetFlag("blurSpoilers", value, false); }
         public static string PosterSize { get => Choice("posterSize", PosterSizes, "medium"); set => SetChoice("posterSize", value, "medium"); }
         // Sous les affiches (posterText) : « title,year » par défaut (absent), « none » pour rien.
         public static readonly string[] PosterTexts = { "title,year", "title", "year", "none" };

@@ -67,6 +67,7 @@ namespace NativeAIO.Screens
             public string Url;
             public List<string> Urls; // images possibles, essayées dans l'ordre (épisodes)
             public bool Built, Texted, Requested, Dead;
+            public Spoilers.Veil Veil; // épisode : flou des épisodes pas commencés (Ui/Spoilers.cs)
         }
 
         // Un bouton du haut.
@@ -303,6 +304,8 @@ namespace NativeAIO.Screens
                                 if (t.Frame.GetChildAt(i).Name == "progress") bars.Add(t.Frame.GetChildAt(i));
                             foreach (View b in bars) { b.Unparent(); b.Dispose(); }
                             AddProgress(t);
+                            // Vu ou commencé : plus caché ; remis à « non vu » : caché hors sélection.
+                            t.Veil?.SetSpoiler(Spoilers.Hidden(it), sections[focus] == s && t.Index == s.Col);
                         }
                     }
                 }
@@ -1158,7 +1161,20 @@ namespace NativeAIO.Screens
             t.Ring = Theme.FocusRing(w, s.ImageH, radius);
             t.Ring.Position = new Position(x - Theme.RingOut, -Theme.RingOut);
             t.Frame = new View { Position = new Position(x, 0), Size = new Size(w, s.ImageH), BackgroundColor = Theme.Placeholder }.Rounded(radius);
-            if (s.Kind == Kind.Episodes && t.Item != null) AddProgress(t);
+            if (s.Kind == Kind.Episodes && t.Item != null)
+            {
+                AddProgress(t);
+                Tile tile = t;
+                t.Veil = new Spoilers.Veil(t.Frame, s.TileW, s.ImageH, Theme.RadiusSmall, Spoilers.Hidden(t.Item), () => tile.Dead || Closed, Guard)
+                {
+                    Texts = shown =>
+                    {
+                        if (tile.Label == null || tile.Text == null) return;
+                        tile.Label.Text = EpisodeName(tile.Item, shown);
+                        tile.Text.Text = EpisodeBody(tile.Item, shown);
+                    },
+                };
+            }
             t.Ring.Hide();
             t.Root.Add(t.Ring);
             t.Root.Add(t.Frame);
@@ -1189,8 +1205,7 @@ namespace NativeAIO.Screens
             if (s.Kind == Kind.Episodes)
             {
                 Item e = t.Item;
-                string name = e.IndexNumber != null ? e.IndexNumber + ". " + e.Name : e.Name;
-                t.Label = new TextLabel { Position = new Position(0, ty), Size = new Size(s.TileW, 30), PointSize = Theme.SizeBody, TextColor = Color.White, Text = name ?? "" };
+                t.Label = new TextLabel { Position = new Position(0, ty), Size = new Size(s.TileW, 30), PointSize = Theme.SizeBody, TextColor = Color.White, Text = EpisodeName(e, t.Veil?.Shown != false) };
                 t.Root.Add(t.Label);
                 t.Text = new TextLabel
                 {
@@ -1200,7 +1215,7 @@ namespace NativeAIO.Screens
                     MultiLine = true,
                     EnableMarkup = true,
                     TextColor = Theme.Text,
-                    Text = "<color value='" + Muted + "'>" + Esc(EpisodeLine(e)) + "</color>\n" + Esc(Pictures.Cut(e.Overview, 70)),
+                    Text = EpisodeBody(e, t.Veil?.Shown != false),
                 };
                 t.Root.Add(t.Text);
                 // Pas d'image à lui (épisode à venir) : grand numéro sur l'image de la série, assombrie.
@@ -1273,6 +1288,17 @@ namespace NativeAIO.Screens
             return sb.ToString();
         }
 
+        // Titre et corps de la carte d'un épisode. Caché (flou des épisodes pas commencés, hors
+        // sélection) : « Épisode 5 » et la ligne date · durée, sans le résumé.
+        static string EpisodeName(Item e, bool shown)
+        {
+            if (!shown) return e.IndexNumber != null ? Lang.T("item.episode_n", e.IndexNumber.ToString()) : "";
+            return (e.IndexNumber != null ? e.IndexNumber + ". " + e.Name : e.Name) ?? "";
+        }
+
+        string EpisodeBody(Item e, bool shown) =>
+            "<color value='" + Muted + "'>" + Esc(EpisodeLine(e)) + "</color>" + (shown ? "\n" + Esc(Pictures.Cut(e.Overview, 70)) : "");
+
         // « 30 oct. 2026 · 27 min restantes · ★ 8.9 », ou « Diffusion ven. 13 nov. · dans 5 jours · 40 min ».
         string EpisodeLine(Item e)
         {
@@ -1317,6 +1343,13 @@ namespace NativeAIO.Screens
             v.LowerToBottom();
             // Image de la série sous un épisode à venir : assombrie, le numéro par-dessus.
             if (s.Kind == Kind.Episodes && t.Item.ImageTags?.Primary == null) v.Opacity = 0.35f;
+            // Image propre à l'épisode : cachée hors sélection s'il n'est pas commencé, puis
+            // recouverte de sa copie floue (l'image de la série d'un épisode à venir reste).
+            if (s.Kind == Kind.Episodes && t.Item.ImageTags?.Primary != null && t.Veil != null && t.Veil.Take(img, path))
+            {
+                imagesShown++;
+                return;
+            }
             Fade(img);
         }
 
@@ -1362,6 +1395,7 @@ namespace NativeAIO.Screens
             if (t.Ring == null) return;
             bool on = sections[focus] == t.Sec && t.Index == t.Sec.Col;
             if (on) t.Ring.Show(); else t.Ring.Hide();
+            t.Veil?.Paint(on);
             if (on) GrowFocused();
         }
 

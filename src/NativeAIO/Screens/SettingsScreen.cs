@@ -683,6 +683,9 @@ namespace NativeAIO.Screens
             PrefChoice(p, T("set.poster_size"), T("set.poster_size_help"), Prefs.PosterSizes, () => Prefs.PosterSize, v => Prefs.PosterSize = v, v => Lang.T("set.size_" + v));
             PrefChoice(p, T("set.under_posters"), T("set.under_posters_help"), Prefs.PosterTexts, () => Prefs.PosterText, v => Prefs.PosterText = v,
                 v => Lang.T("set.lines_" + (v == "title,year" ? "both" : v)));
+            // Comme le web, après l'accueil et les grilles. Effet à la prochaine ouverture d'une page.
+            p.AddSection(T("set.spoilers"), FollowsYou);
+            PrefToggle(p, T("set.blur_spoilers"), T("set.blur_spoilers_help"), () => Prefs.BlurSpoilers, v => Prefs.BlurSpoilers = v);
             p.AddSection(null, null);
             p.Button(T("set.refresh"), T("set.refresh_help"), T("set.refresh_button"), RefreshHome);
         }
