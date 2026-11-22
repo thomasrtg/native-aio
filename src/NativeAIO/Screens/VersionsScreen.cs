@@ -77,15 +77,22 @@ namespace NativeAIO.Screens
         Animation reveal; // gardée dans un champ, sinon elle s'arrête
 
         // now : « Lire immédiatement » du menu d'une carte (held du web) : la première version,
-        // sans liste, même sans le réglage.
-        public VersionsScreen(Item target, long startTicks, Item show, bool straight = true, bool now = false)
+        // sans liste, même sans le réglage. choose : « Choisir une version » du même menu : la
+        // liste, même s'il n'y a qu'une version.
+        readonly bool choose;
+
+        public VersionsScreen(Item target, long startTicks, Item show, bool straight = true, bool now = false, bool choose = false)
         {
             this.target = target;
             this.startTicks = resumeTicks = startTicks;
             this.show = show ?? target;
+            this.choose = choose;
+            if (choose) straight = false;
             last = straight && startTicks > 0 ? LastVersions.Get(target.Id) : null;
             first = now || (straight && Prefs.AutoPlayFirst);
-            this.straight = first || last != null;
+            // Liste déjà préchargée avec une seule version : écran de chargement du lecteur tout
+            // de suite, comme un lancement direct (le web attend la liste 350 ms pour la même raison).
+            this.straight = first || last != null || (!choose && Library.PreloadedSingle(target.Id));
         }
 
         protected override View Build()
@@ -357,22 +364,31 @@ namespace NativeAIO.Screens
             sources = info?.MediaSources ?? new Source[0];
             playSession = info?.PlaySessionId;
             Probe.Log("versions", $"{sources.Length} versions en {tList} s" + (again ? " (recherche à nouveau)" : reused ? " (préchargées)" : "") + (straight && !again ? ", lancement direct" : ""));
+            var playable = new List<Source>();
+            foreach (Source src in sources) if (src.Type != "Placeholder") playable.Add(src);
+            Source pick = null;
             if (straight && !again)
             {
-                var playable = new List<Source>();
-                foreach (Source src in sources) if (src.Type != "Placeholder") playable.Add(src);
-                Source pick = last != null ? playable.Find(src => src.Id == last) : null;
                 if (last != null)
                 {
-                    Probe.Log("versions", pick != null ? $"dernière version retrouvée ({playable.IndexOf(pick) + 1}/{playable.Count})" : "dernière version introuvable");
+                    pick = LastVersions.Find(target.Id, playable, out bool byRelease);
+                    Probe.Log("versions", pick == null ? "dernière version introuvable"
+                        : $"dernière version retrouvée{(byRelease ? " par sa release" : "")} ({playable.IndexOf(pick) + 1}/{playable.Count})");
                     if (pick == null) LastVersions.Forget(target.Id);
                 }
                 if (pick == null && first && playable.Count > 0) pick = playable[0];
-                if (pick != null)
-                {
-                    guard.Run("Straight", () => Nav.Replace(new PlayerScreen(target, show, pick, playable, playSession, startTicks, all: sources) { Seamless = waiting }));
-                    return;
-                }
+            }
+            // Une seule version : lancée sans choix (web du 2026-11-12, listOrPlay), sauf pour
+            // « Choisir une version » et « Rechercher à nouveau ».
+            if (pick == null && !choose && !again && playable.Count == 1)
+            {
+                pick = playable[0];
+                Probe.Log("versions", "une seule version : lancement direct");
+            }
+            if (pick != null)
+            {
+                guard.Run("Straight", () => Nav.Replace(new PlayerScreen(target, show, pick, playable, playSession, startTicks, all: sources) { Seamless = waiting }));
+                return;
             }
             guard.Run("Versions", () =>
             {

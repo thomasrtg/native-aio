@@ -1,9 +1,11 @@
 // Dernière version lue de chaque titre, retrouvée à la reprise (lastVersions du web,
-// lib/playback/play.ts) : OK sur « Reprendre » relance la même version sans passer par la liste.
+// lib/playback/sources.ts) : OK sur « Reprendre » relance la même version sans passer par la liste.
 // Gardée seulement si le serveur annonce des identifiants de version stables (fonction
 // « versions ») ou si la version ne vient pas d'AIOStreams, comme le web. 500 titres au plus
 // par utilisateur, les plus récents d'abord, dans la préférence play.last.{utilisateur}
-// (une ligne « titre<TAB>version » par titre). Lue une fois, écrite par Store.
+// (une ligne « titre<TAB>version[<TAB>release<TAB>service] » par titre). Lue une fois, écrite par Store.
+// Release et service (web du 2026-11-11, findVersion) : si l'identifiant n'est plus dans la
+// liste, la même release sur le même service la remplace.
 using System;
 using System.Collections.Generic;
 using Tizen.Applications;
@@ -13,35 +15,64 @@ namespace NativeAIO.Core
     static class LastVersions
     {
         const int Max = 500;
-        static List<KeyValuePair<string, string>> list;
+
+        class Entry
+        {
+            public string Item, Id, Release, Service;
+        }
+
+        static List<Entry> list;
         static string listUser;
 
         static string Key => "play.last." + Session.UserId;
 
-        static List<KeyValuePair<string, string>> Load()
+        static List<Entry> Load()
         {
             if (list != null && listUser == Session.UserId) return list;
             listUser = Session.UserId;
-            list = new List<KeyValuePair<string, string>>();
+            list = new List<Entry>();
             try
             {
                 if (Preference.Contains(Key))
                     foreach (string line in (Preference.Get<string>(Key) ?? "").Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
                     {
-                        int tab = line.IndexOf('\t');
-                        if (tab > 0) list.Add(new KeyValuePair<string, string>(line.Substring(0, tab), line.Substring(tab + 1)));
+                        string[] f = line.Split('\t');
+                        if (f.Length < 2 || f[0].Length == 0) continue;
+                        list.Add(new Entry
+                        {
+                            Item = f[0],
+                            Id = f[1],
+                            Release = f.Length > 2 && f[2].Length > 0 ? f[2] : null,
+                            Service = f.Length > 3 && f[3].Length > 0 ? f[3] : null,
+                        });
                     }
             }
             catch (Exception) { }
             return list;
         }
 
-        // Version retenue pour ce titre, ou null.
-        public static string Get(string itemId)
+        static Entry EntryOf(string itemId)
         {
             if (itemId == null) return null;
-            foreach (var kv in Load()) if (kv.Key == itemId) return kv.Value;
+            foreach (Entry e in Load()) if (e.Item == itemId) return e;
             return null;
+        }
+
+        // Identifiant de la version retenue pour ce titre, ou null.
+        public static string Get(string itemId) => EntryOf(itemId)?.Id;
+
+        // Version retenue retrouvée dans la liste : par son identifiant, sinon par sa release sur
+        // le même service (comme findVersion du web). null si aucune.
+        public static Source Find(string itemId, List<Source> playable, out bool byRelease)
+        {
+            byRelease = false;
+            Entry e = EntryOf(itemId);
+            if (e == null) return null;
+            Source s = playable.Find(x => x.Id == e.Id);
+            if (s != null || e.Release == null) return s;
+            s = playable.Find(x => x.Aio?.Release == e.Release && x.Aio?.Service == e.Service);
+            byRelease = s != null;
+            return s;
         }
 
         // Lecture démarrée sur cette version (lecteur).
@@ -55,26 +86,31 @@ namespace NativeAIO.Core
                 catch (Exception) { return; }
             }
             if (!lasting) { Probe.Log("lastversion", "identifiants de version non stables : rien de retenu"); return; }
-            Put(itemId, source.Id);
+            Put(itemId, new Entry { Item = itemId, Id = source.Id, Release = source.Aio?.Release, Service = source.Aio?.Service });
         }
 
         // Version retenue introuvable dans la liste : oubliée (le web fait de même).
         public static void Forget(string itemId)
         {
-            if (Get(itemId) == null) return;
+            if (EntryOf(itemId) == null) return;
             Put(itemId, null);
         }
 
-        static void Put(string itemId, string sourceId)
+        static void Put(string itemId, Entry entry)
         {
-            List<KeyValuePair<string, string>> l = Load();
-            l.RemoveAll(kv => kv.Key == itemId);
-            if (sourceId != null) l.Insert(0, new KeyValuePair<string, string>(itemId, sourceId));
+            List<Entry> l = Load();
+            l.RemoveAll(e => e.Item == itemId);
+            if (entry != null) l.Insert(0, entry);
             if (l.Count > Max) l.RemoveRange(Max, l.Count - Max);
             var sb = new System.Text.StringBuilder();
-            foreach (var kv in l) sb.Append(kv.Key).Append('\t').Append(kv.Value).Append('\n');
+            foreach (Entry e in l)
+            {
+                sb.Append(e.Item).Append('\t').Append(e.Id);
+                if (e.Release != null) sb.Append('\t').Append(e.Release).Append('\t').Append(e.Service ?? "");
+                sb.Append('\n');
+            }
             Store.Set(Key, sb.ToString());
-            Probe.Log("lastversion", sourceId != null ? $"retenue pour {itemId} ({l.Count} titres)" : $"oubliée pour {itemId}");
+            Probe.Log("lastversion", entry != null ? $"retenue pour {itemId}" + (entry.Release != null ? " avec sa release" : " sans release") + $" ({l.Count} titres)" : $"oubliée pour {itemId}");
         }
     }
 }

@@ -374,6 +374,9 @@ namespace NativeAIO.Core
         // peut prendre plusieurs secondes. Profil repris du web : tout fichier se lit tel quel.
         // refresh : « Rechercher à nouveau » du web (Refresh: true), le serveur refait chercher
         // ses addons au lieu de reprendre une liste gardée.
+        // SkipSubtitles (web, 2026-11-07) : le serveur ne demande pas les sous-titres des addons
+        // pour la première version de la liste ; le lecteur les demande pour la version lue
+        // (PlayerScreen.AskSubtitles).
         public static Task<PlaybackInfo> Versions(string id, bool refresh = false) =>
             Session.Client.PostSlow<PlaybackInfo>(Q($"/Items/{id}/PlaybackInfo", ("userId", Session.UserId)),
                 new PlaybackInfoBody
@@ -381,6 +384,7 @@ namespace NativeAIO.Core
                     UserId = Session.UserId,
                     Fresh = true,
                     Refresh = refresh,
+                    SkipSubtitles = true,
                     DeviceProfile = new DeviceProfile
                     {
                         DirectPlayProfiles = new[] { new DirectPlayProfile { Type = "Video" } },
@@ -414,6 +418,16 @@ namespace NativeAIO.Core
         {
             reused = preloaded.TryGetValue(id, out var p) && Fresh(p);
             return reused ? p.task : Versions(id);
+        }
+
+        // Vrai si la liste préchargée de ce titre est déjà là, fraîche, avec une seule version
+        // jouable (les messages des addons ne comptent pas) : la liste n'a pas à se montrer.
+        public static bool PreloadedSingle(string id)
+        {
+            if (id == null || !preloaded.TryGetValue(id, out var p) || !Fresh(p) || p.task.Status != TaskStatus.RanToCompletion) return false;
+            int n = 0;
+            foreach (Source s in p.task.Result?.MediaSources ?? new Source[0]) if (s.Type != "Placeholder") n++;
+            return n == 1;
         }
 
         // Nouvelle liste après « Rechercher à nouveau » : reprise par une prochaine ouverture de la
@@ -824,6 +838,10 @@ namespace NativeAIO.Core
         [DataMember(Name = "type")] public string Type;
         // Même source d'un épisode à l'autre (behaviorHints.bingeGroup de Stremio).
         [DataMember(Name = "bingeGroup")] public string BingeGroup;
+        // Service de débrid, et release : la même quel que soit l'addon qui donne le fichier
+        // (serveur du 2026-11-11 et après) ; la reprise s'y rabat si l'identifiant a disparu.
+        [DataMember(Name = "service")] public string Service;
+        [DataMember(Name = "release")] public string Release;
     }
 
     // Réponse de /MediaSegments/{id}. Type : Intro, Recap, Outro, Preview, Commercial.
@@ -848,6 +866,7 @@ namespace NativeAIO.Core
         [DataMember] public DeviceProfile DeviceProfile;
         [DataMember(EmitDefaultValue = false)] public bool Fresh;
         [DataMember(EmitDefaultValue = false)] public bool Refresh;
+        [DataMember(EmitDefaultValue = false)] public bool SkipSubtitles;
         [DataMember(EmitDefaultValue = false)] public string MediaSourceId;
     }
 

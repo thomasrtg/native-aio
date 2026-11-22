@@ -166,7 +166,7 @@ namespace NativeAIO.Ui
             if (playable)
             {
                 Add(Lang.T(ticks > 0 ? "menu.resume" : "menu.play"), "menu_play", () => owner.Nav.Push(new VersionsScreen(it, ticks, serie)));
-                if (straight) Add(Lang.T("menu.versions"), "menu_versions", () => owner.Nav.Push(new VersionsScreen(it, ticks, serie, straight: false)));
+                if (straight) Add(Lang.T("menu.versions"), "menu_versions", () => owner.Nav.Push(new VersionsScreen(it, ticks, serie, choose: true)));
                 else Add(Lang.T("menu.now"), "menu_now", () => owner.Nav.Push(new VersionsScreen(it, ticks, serie, now: true)));
             }
             if (!onPage)
