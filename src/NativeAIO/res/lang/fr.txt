@@ -36,6 +36,24 @@ quick.expired = Ce code a expiré.
 quick.unavailable = Connexion rapide non disponible : {0}
 quick.new_code = Nouveau code
 
+phone.link = Utiliser un téléphone
+phone.title = Connexion avec un téléphone
+phone.help = Scannez ce code avec un téléphone connecté au même réseau que la TV, puis remplissez la page qui s'ouvre.
+phone.address = Ou ouvrez {0} dans le navigateur du téléphone.
+phone.waiting = En attente du téléphone…
+phone.opened = La page est ouverte sur le téléphone.
+phone.server_found = Serveur trouvé : {0}. Continuez sur le téléphone.
+phone.quick = Code de connexion rapide affiché sur le téléphone : {0}
+phone.quick_gone = La TV ne répond plus. Si vous avez approuvé le code, elle est connectée.
+phone.busy = La TV traite encore la demande précédente.
+phone.no_network = La TV n'a pas d'adresse sur le réseau local.
+phone.failed = La connexion avec le téléphone n'a pas pu démarrer ({0}).
+phone.invalid_title = Code expiré
+phone.invalid = Scannez de nouveau le code affiché sur la TV.
+phone.lost = La TV ne répond pas. Vérifiez que le téléphone est sur le même réseau et que la TV affiche toujours le code.
+phone.done_title = Connecté
+phone.done_help = La TV est maintenant connectée. Vous pouvez fermer cette page.
+
 who.title = Qui regarde ?
 who.switching = Connexion…
 who.protected = Cet utilisateur est protégé par un code : ce n'est pas encore géré par Native AIO.

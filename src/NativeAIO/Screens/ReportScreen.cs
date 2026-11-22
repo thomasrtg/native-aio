@@ -20,7 +20,7 @@ namespace NativeAIO.Screens
 {
     class ReportScreen : Screen
     {
-        const int QrMax = 900, Quiet = 4, QrX = 140;
+        const int QrMax = 900, QrX = 140;
         const int ButtonW = 280, ButtonH = 56;
 
         readonly Crash.Report report;
@@ -157,7 +157,7 @@ namespace NativeAIO.Screens
             try
             {
                 string url = report.IssueUrl();
-                (file, side) = await Task.Run(() => Draw(url));
+                (file, side) = await Task.Run(() => QrImage.Write(url, QrMax, "report"));
             }
             catch (Exception e)
             {
@@ -172,35 +172,6 @@ namespace NativeAIO.Screens
             qrBox.Position = new Position(QrX + (QrMax - side) / 2, (1080 - side) / 2);
             // Fichier local à sa taille : sans DesiredWidth/Height (LECONS.md).
             qrBox.Add(new ImageView { ResourceUrl = file, Size = new Size(side, side) });
-        }
-
-        // Écrit le QR code en PNG gris : un nouveau nom à chaque fois (la TV garde les images
-        // déjà lues par leur nom), les anciens effacés.
-        static (string, int) Draw(string url)
-        {
-            QrCode qr = QrCode.FromText(url);
-            int n = qr.Size + 2 * Quiet;
-            int scale = Math.Max(4, Math.Min(10, QrMax / n));
-            int side = n * scale;
-            var px = new byte[side * side];
-            for (int i = 0; i < px.Length; i++) px[i] = 255;
-            for (int y = 0; y < qr.Size; y++)
-                for (int x = 0; x < qr.Size; x++)
-                {
-                    if (!qr[x, y]) continue;
-                    for (int dy = 0; dy < scale; dy++)
-                    {
-                        int row = ((y + Quiet) * scale + dy) * side + (x + Quiet) * scale;
-                        for (int dx = 0; dx < scale; dx++) px[row + dx] = 0;
-                    }
-                }
-            string dir = Path.Combine(Tizen.Applications.Application.Current.DirectoryInfo.Cache, "report");
-            Directory.CreateDirectory(dir);
-            foreach (string old in Directory.GetFiles(dir)) { try { File.Delete(old); } catch (Exception) { } }
-            string file = Path.Combine(dir, "qr-" + DateTime.UtcNow.Ticks + ".png");
-            Png.Write(file, side, side, 1, px);
-            Probe.Log("report", $"QR code version {qr.Version}, {url.Length} caractères, {side} px");
-            return (file, side);
         }
     }
 }

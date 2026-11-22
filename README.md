@@ -24,6 +24,7 @@ The player screenshot is a composite: the TV does not capture video, so the real
 ## Features
 
 - Sign-in by address, user name and password, or Quick Connect; "Who's watching?" for several users on one configuration.
+- Sign-in with a phone: scan a QR code on the TV and type the server address and sign-in details (or use Quick Connect) on the phone instead of the remote.
 - Home with a featured banner, "Continue watching", "Next up", "Upcoming" and the catalogue rows; cards open on focus and play their trailer.
 - Title pages with seasons, episodes, cast, similar titles and collections; list of versions (streams) for each title.
 - Native 4K player: audio and subtitle tracks, subtitles drawn by the app (style, offset, automatic sync), skip recap / intro / credits, next episode, resume.
@@ -66,6 +67,7 @@ For development only, `dotnet build -c Release -p:Probe=true` builds a separate 
 
 - The sign-in token is stored in plain text in the app's preferences on the TV.
 - Use an `https://` server address. With `http://` (or an address typed without a scheme, which is tried with `http://` like the web app), the token travels in clear text.
+- Sign-in with a phone: while the QR code is shown, the TV runs a small web server on your local network (port 8125), protected by a one-time code in the QR code. It stops once signed in, when you leave the screen or after 10 minutes without a request. Between the phone and the TV, the address, user name and password travel in clear text over your local network; the TV does not keep the password, only the sign-in token, as with the remote.
 
 ## Credits
 

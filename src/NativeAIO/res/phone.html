@@ -1,0 +1,252 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="referrer" content="no-referrer">
+<title>Native AIO</title>
+<!-- Page servie par la TV au téléphone (Core/PhoneLink.cs) : mêmes écrans que la TV
+     (Ui/AuthPage.cs), aux tailles du web (carte de 384 px, environ 2/3 de la TV). -->
+<style>
+:root { --bg: #0A0A0A; --accent: #2E7DA6; }
+/* Police du code de connexion rapide, celle de la TV (servie par la TV). */
+@font-face { font-family: 'Cousine'; src: url(/code.ttf) format('truetype'); font-display: swap; }
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0; min-height: 100vh; min-height: 100dvh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 40px 16px; color: #fff;
+  font: 14px/20px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: radial-gradient(ellipse at top, rgba(99,102,241,.18), transparent 60%) no-repeat, var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+.page { width: 100%; max-width: 384px; display: flex; flex-direction: column; align-items: center; animation: appear .3s ease-out; }
+@keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.logo { width: 64px; height: 64px; margin-bottom: 32px; }
+.card {
+  width: 100%; padding: 24px; border: 1px solid #262626; border-radius: 16px; background: #0B0B0B;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.card[hidden] { display: none; }
+.head { text-align: center; }
+h1 { margin: 0; font-size: 20px; line-height: 28px; font-weight: 600; }
+.help { margin: 4px 0 0; color: #9CA3AF; }
+label { display: block; font-weight: 600; color: rgba(255,255,255,.9); margin-bottom: 7px; }
+label b { color: #EF4444; font-weight: 600; }
+input {
+  display: block; width: 100%; height: 40px; padding: 0 11px; border-radius: 8px;
+  border: 1px solid #303030; background: #141414; color: #fff; caret-color: #fff;
+  font: inherit; font-size: 16px; /* 16 px : en dessous, l'iPhone agrandit la page */
+  outline: none; -webkit-appearance: none; appearance: none;
+}
+input::placeholder { color: rgba(255,255,255,.35); }
+input:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.status { margin: 0; text-align: center; color: #9CA3AF; }
+.status.error { color: #FCA5A5; }
+.status:empty { display: none; }
+button {
+  font: inherit; cursor: pointer; border: 0; -webkit-tap-highlight-color: transparent;
+}
+.main {
+  width: 100%; height: 40px; border-radius: 9999px; background: #fff; color: #0A0D12; font-size: 15px;
+}
+.main:focus-visible { outline: none; box-shadow: 0 0 0 3px #0A0A0A, 0 0 0 5px #fff; }
+.main:active { opacity: .85; }
+.main:disabled { opacity: .6; cursor: default; }
+.links { display: flex; justify-content: center; gap: 8px; }
+.pill {
+  height: 30px; padding: 0 12px; border-radius: 9999px; background: rgba(255,255,255,.12);
+  color: #fff; font-weight: 600;
+}
+.pill:focus-visible, .pill:active { outline: none; background: #fff; color: #0A0D12; }
+.code {
+  height: 56px; display: flex; align-items: center; justify-content: center;
+  font: 32px/1 'Cousine', ui-monospace, 'Courier New', monospace; color: #fff;
+}
+.code:empty { display: none; }
+</style>
+<script>
+var S = /*STATE*/null;
+if (S) {
+  document.documentElement.lang = S.lang;
+  document.documentElement.style.setProperty('--bg', S.bg);
+  document.documentElement.style.setProperty('--accent', S.accent);
+}
+</script>
+</head>
+<body>
+<div class="page">
+  <img class="logo" src="/logo.png" alt="">
+
+  <form class="card" id="server" hidden novalidate>
+    <div class="head"><h1 data-t="server.title"></h1><p class="help" data-t="server.help"></p></div>
+    <div>
+      <label for="address"><span data-t="server.label"></span> <b>*</b></label>
+      <input id="address" type="url" inputmode="url" autocomplete="url" autocapitalize="off" autocorrect="off" spellcheck="false" data-p="server.placeholder">
+    </div>
+    <p class="status"></p>
+    <button class="main" type="submit" data-t="server.connect"></button>
+  </form>
+
+  <form class="card" id="signin" hidden novalidate>
+    <div class="head"><h1 data-t="signin.title"></h1><p class="help" data-t="signin.help"></p></div>
+    <div>
+      <label for="username"><span data-t="signin.username"></span> <b>*</b></label>
+      <input id="username" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div>
+      <label for="password"><span data-t="signin.password"></span> <b>*</b></label>
+      <input id="password" type="password" autocomplete="current-password">
+    </div>
+    <p class="status"></p>
+    <button class="main" type="submit" data-t="signin.submit"></button>
+    <div class="links">
+      <button class="pill" type="button" id="quickgo" data-t="signin.quick_connect" hidden></button>
+      <button class="pill" type="button" id="change" data-t="signin.change_server"></button>
+    </div>
+  </form>
+
+  <div class="card" id="quick" hidden>
+    <div class="head"><h1 data-t="quick.title"></h1><p class="help" data-t="quick.hint"></p></div>
+    <div class="code" id="code"></div>
+    <p class="status"></p>
+    <button class="main" type="button" id="retry" data-t="quick.new_code" hidden></button>
+    <div class="links"><button class="pill" type="button" id="quickback" data-t="auth.back"></button></div>
+  </div>
+
+  <div class="card" id="done" hidden>
+    <div class="head"><h1 data-t="phone.done_title"></h1><p class="help" data-t="phone.done_help"></p></div>
+  </div>
+
+  <div class="card" id="invalid" hidden>
+    <div class="head"><h1 data-t="phone.invalid_title"></h1><p class="help" data-t="phone.invalid"></p></div>
+  </div>
+</div>
+<script>
+(function () {
+  var T = (S && S.t) || {};
+  var key = new URLSearchParams(location.search).get('k') || '';
+  var busy = false;
+
+  function $(id) { return document.getElementById(id); }
+  function text(k) { return T[k] || ''; }
+  [].forEach.call(document.querySelectorAll('[data-t]'), function (e) { e.textContent = text(e.getAttribute('data-t')); });
+  [].forEach.call(document.querySelectorAll('[data-p]'), function (e) { e.placeholder = text(e.getAttribute('data-p')); });
+
+  function show(id) {
+    ['server', 'signin', 'quick', 'done', 'invalid'].forEach(function (c) { $(c).hidden = c !== id; });
+    var first = $(id).querySelector('input');
+    if (first && !first.value) first.focus();
+  }
+
+  function status(card, msg, error) {
+    var p = $(card).querySelector('.status');
+    p.textContent = msg || '';
+    p.className = 'status' + (error ? ' error' : '');
+  }
+
+  // Demande à la TV ; réponse { ok } ou { error }.
+  function ask(step, data, done) {
+    data.k = key;
+    var body = Object.keys(data).map(function (n) {
+      return encodeURIComponent(n) + '=' + encodeURIComponent(data[n]);
+    }).join('&');
+    fetch('/' + step, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }, body: body, cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(done, function () { done({ error: text('phone.lost'), lost: true }); });
+  }
+
+  function send(card, step, data, waiting, next) {
+    if (busy) return;
+    busy = true;
+    var button = $(card).querySelector('.main');
+    button.disabled = true;
+    status(card, waiting, false);
+    ask(step, data, function (r) {
+      busy = false;
+      button.disabled = false;
+      if (r && r.ok) { status(card, '', false); next(r); return; }
+      status(card, (r && r.error) || text('phone.lost'), true);
+    });
+  }
+
+  if (!S || !S.ok) { show('invalid'); return; }
+
+  $('address').value = S.address || '';
+  $('server').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (document.activeElement) document.activeElement.blur();
+    send('server', 'server', { address: $('address').value }, text('server.checking'), function (r) {
+      $('quickgo').hidden = !r.quick;
+      show('signin');
+    });
+  });
+  $('signin').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!$('username').value.trim()) { status('signin', text('signin.missing'), true); $('username').focus(); return; }
+    if (document.activeElement) document.activeElement.blur();
+    send('signin', 'signin', { username: $('username').value, password: $('password').value }, text('signin.busy'), function () {
+      $('password').value = '';
+      show('done');
+    });
+  });
+  // Entrée dans l'identifiant : passe au mot de passe, comme « Terminé » sur la TV.
+  $('username').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); $('password').focus(); }
+  });
+  $('change').addEventListener('click', function () { status('signin', '', false); show('server'); });
+
+  // Connexion rapide, comme sur la TV : la TV demande un code au serveur et vérifie elle-même
+  // s'il est approuvé ; le téléphone affiche le code et demande à la TV toutes les 3 s où elle en
+  // est (et dès qu'il revient sur la page). « round » écarte les réponses d'un essai abandonné.
+  var round = 0, poll = null, checkNow = null;
+  function stopQuick() { round++; clearTimeout(poll); checkNow = null; }
+  function quickFail(msg) {
+    $('code').textContent = '';
+    status('quick', msg, true);
+    $('retry').hidden = false;
+  }
+  function startQuick() {
+    stopQuick();
+    var mine = round;
+    $('code').textContent = '';
+    $('retry').hidden = true;
+    status('quick', '', false);
+    ask('quick', {}, function (r) {
+      if (mine !== round) return;
+      if (!r || !r.ok) { quickFail((r && r.error) || text('phone.lost')); return; }
+      $('code').textContent = r.code;
+      status('quick', text('quick.waiting'), false);
+      var asking = false;
+      checkNow = function check() {
+        if (asking || mine !== round) return;
+        asking = true;
+        clearTimeout(poll);
+        ask('quickcheck', {}, function (c) {
+          asking = false;
+          if (mine !== round) return;
+          if (c && c.ok && c.wait) { poll = setTimeout(check, 3000); return; }
+          if (c && c.ok) { stopQuick(); show('done'); return; }
+          // TV partie à l'accueil pendant que la page était en pause : probablement connectée.
+          if (c && c.lost) { stopQuick(); $('code').textContent = ''; status('quick', text('phone.quick_gone'), false); return; }
+          quickFail((c && c.error) || text('phone.lost'));
+        });
+      };
+      poll = setTimeout(checkNow, 3000);
+    });
+  }
+  $('quickgo').addEventListener('click', function () { status('signin', '', false); show('quick'); startQuick(); });
+  $('retry').addEventListener('click', startQuick);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && checkNow) checkNow();
+  });
+  $('quickback').addEventListener('click', function () { stopQuick(); show('signin'); });
+
+  show('server');
+  ask('hello', {}, function (r) { if (r && r.error && !r.ok) { status('server', r.error, true); } });
+})();
+</script>
+</body>
+</html>

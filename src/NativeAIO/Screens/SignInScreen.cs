@@ -1,7 +1,8 @@
 // Connexion à la configuration AIOStreams, reprise de la version web (pages/sign-in.tsx,
 // lib/session.tsx ; écran du module 15) : UUID ou alias et mot de passe, puis les liens
-// « Connexion rapide » (si le serveur la propose) et « Changer de serveur ».
+// « Connexion rapide » (si le serveur la propose), « Utiliser un téléphone » et « Changer de serveur ».
 using System;
+using System.Threading.Tasks;
 using Tizen.NUI.BaseComponents;
 using NativeAIO.Core;
 using NativeAIO.Ui;
@@ -27,6 +28,7 @@ namespace NativeAIO.Screens
             page.AddButton(() => Lang.T("signin.submit"), SignIn);
             links = page.AddLinks(
                 (() => Lang.T("signin.quick_connect"), () => Nav.Push(new QuickConnectScreen())),
+                (() => Lang.T("phone.link"), () => Nav.Push(new PhoneScreen())),
                 (() => Lang.T("signin.change_server"), () => Nav.Push(new ServerScreen())));
             page.ShowLink(links, 0, false);
             page.Focus(username);
@@ -65,17 +67,8 @@ namespace NativeAIO.Screens
             page.SetStatus(status, () => Lang.T("signin.busy"), false);
             try
             {
-                AuthResult auth = await Session.Anonymous.Post<AuthResult>("/Users/AuthenticateByName",
-                    new SignInBody { Username = name, Pw = password.Text });
-                if (Closed) return;
-                // Un nom qui désigne un utilisateur précis entre directement (comme la version web).
-                bool named = string.Equals(name, auth.User?.Name, StringComparison.OrdinalIgnoreCase);
-                PickableUser[] users = null;
-                if (name.Contains("/") || named) Session.Adopt(auth);
-                else users = await Session.Enter(auth);
-                if (Closed) return;
-                if (users != null) Nav.Reset(new WhoScreen(users));
-                else Nav.Reset(new HomeScreen());
+                Screen next = await Login(name, password.Text);
+                if (!Closed) Nav.Reset(next);
             }
             catch (ApiError e)
             {
@@ -88,6 +81,22 @@ namespace NativeAIO.Screens
                 if (!Closed) page.SetStatus(status, () => Lang.T("error.unknown"), true);
             }
             finally { busy = false; }
+        }
+
+        // Connexion commune à cet écran et au téléphone (PhoneScreen) : rend l'écran à ouvrir ensuite.
+        // server : serveur trouvé par le téléphone, gardé seulement si la connexion réussit.
+        public static async Task<Screen> Login(string name, string password, Server.Found server = null)
+        {
+            Api api = server != null ? new Api(server.Base) : Session.Anonymous;
+            AuthResult auth = await api.Post<AuthResult>("/Users/AuthenticateByName",
+                new SignInBody { Username = name, Pw = password });
+            if (server != null) Session.SetServer(server.Base, server.Name);
+            // Un nom qui désigne un utilisateur précis entre directement (comme la version web).
+            bool named = string.Equals(name, auth.User?.Name, StringComparison.OrdinalIgnoreCase);
+            PickableUser[] users = null;
+            if (name.Contains("/") || named) Session.Adopt(auth);
+            else users = await Session.Enter(auth);
+            return users != null ? new WhoScreen(users) : (Screen)new HomeScreen();
         }
 
         // Texte d'une erreur du serveur, pour tous les écrans.

@@ -11,7 +11,7 @@ namespace NativeAIO.Screens
 {
     class ServerScreen : Screen
     {
-        const string PrefInput = "server.input";
+        public const string PrefInput = "server.input";
 
         AuthPage page;
         TextField field;
@@ -27,7 +27,9 @@ namespace NativeAIO.Screens
             field = page.AddField(() => Lang.T("server.label"), () => Lang.T("server.placeholder"), Saved(), AuthPage.Kind.Url);
             status = page.AddStatus();
             page.AddButton(() => Lang.T("server.connect"), Check);
-            links = page.AddLinks((() => Lang.T("auth.back"), () => Nav.Back()));
+            links = page.AddLinks(
+                (() => Lang.T("auth.back"), () => Nav.Back()),
+                (() => Lang.T("phone.link"), () => Nav.Push(new PhoneScreen())));
             page.Focus(field);
             root.Add(page.View);
             return root;
@@ -66,7 +68,7 @@ namespace NativeAIO.Screens
             finally { checking = false; }
         }
 
-        static string Saved()
+        public static string Saved()
         {
             try { return Preference.Contains(PrefInput) ? Preference.Get<string>(PrefInput) : ""; }
             catch (Exception) { return ""; }

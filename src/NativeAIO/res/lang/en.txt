@@ -36,6 +36,24 @@ quick.expired = This code has expired.
 quick.unavailable = Quick Connect is unavailable: {0}
 quick.new_code = New code
 
+phone.link = Use a phone
+phone.title = Sign in with a phone
+phone.help = Scan this code with a phone on the same network as the TV, then fill in the page that opens.
+phone.address = Or open {0} in the phone's browser.
+phone.waiting = Waiting for the phone…
+phone.opened = The page is open on the phone.
+phone.server_found = Server found: {0}. Continue on the phone.
+phone.quick = Quick Connect code shown on the phone: {0}
+phone.quick_gone = The TV no longer answers. If you approved the code, it is signed in.
+phone.busy = The TV is still working on the previous request.
+phone.no_network = The TV has no address on the local network.
+phone.failed = The phone connection could not start ({0}).
+phone.invalid_title = Code no longer valid
+phone.invalid = Scan the code shown on the TV again.
+phone.lost = The TV is not answering. Check that the phone is on the same network and that the TV still shows the code.
+phone.done_title = Signed in
+phone.done_help = The TV is now signed in. You can close this page.
+
 who.title = Who's watching?
 who.switching = Signing in…
 who.protected = This user is protected by a code: Native AIO does not handle that yet.

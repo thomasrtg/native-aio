@@ -42,7 +42,24 @@ namespace NativeAIO.Screens
             View root = AuthPage.Backdrop();
             // Visible d'emblée, sans fondu ni chargement différé du logo : il prend le relais de l'image de
             // lancement identique (shared/res/splash.png), un fondu faisait clignoter le passage.
-            splash = new View { Size = new Size(1920, 1080) };
+            splash = Splash(out streak);
+            root.Add(splash);
+
+            page = new AuthPage();
+            page.AddTitle(() => Lang.T("start.failed"));
+            page.AddHelp(() => Lang.T("start.failed_help", Session.Base ?? ""));
+            retry = page.AddButton(() => Lang.T("start.retry"), () => { if (failed) Go(); });
+            page.AddLinks((() => Lang.T("start.change_server"), () => { if (failed) Nav.Push(new ServerScreen()); }));
+            page.Focus(retry);
+            page.View.Hide();
+            root.Add(page.View);
+            return root;
+        }
+
+        // Logo, nom et barre de chargement, aussi montrés pendant la connexion par téléphone (PhoneScreen).
+        public static View Splash(out Streak streak)
+        {
+            var splash = new View { Size = new Size(1920, 1080) };
             splash.Add(new ImageView
             {
                 ResourceUrl = Tizen.Applications.Application.Current.DirectoryInfo.Resource + "images/aiostreams.png",
@@ -65,17 +82,7 @@ namespace NativeAIO.Screens
             streak = new Streak(StreakW, 2, StreakPeriod);
             streak.View.Position = new Position((1920 - StreakW) / 2, StreakY);
             splash.Add(streak.View);
-            root.Add(splash);
-
-            page = new AuthPage();
-            page.AddTitle(() => Lang.T("start.failed"));
-            page.AddHelp(() => Lang.T("start.failed_help", Session.Base ?? ""));
-            retry = page.AddButton(() => Lang.T("start.retry"), () => { if (failed) Go(); });
-            page.AddLinks((() => Lang.T("start.change_server"), () => { if (failed) Nav.Push(new ServerScreen()); }));
-            page.Focus(retry);
-            page.View.Hide();
-            root.Add(page.View);
-            return root;
+            return splash;
         }
 
         public override void ApplyTexts() => page.ApplyTexts();
@@ -160,7 +167,9 @@ namespace NativeAIO.Screens
 
         // Attend la fin du passage en cours de la traînée, et au moins minPasses passages depuis son
         // départ, puis l'arrête.
-        async Task EndStreak(int minPasses)
+        Task EndStreak(int minPasses) => EndStreak(streak, clock, minPasses);
+
+        public static async Task EndStreak(Streak streak, Stopwatch clock, int minPasses)
         {
             long t = clock.ElapsedMilliseconds;
             long passes = Math.Max(minPasses, (t + StreakPeriod - 1) / StreakPeriod);
