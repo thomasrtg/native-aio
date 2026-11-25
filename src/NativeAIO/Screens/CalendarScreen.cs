@@ -605,7 +605,7 @@ namespace NativeAIO.Screens
                 string code = Library.Code(it);
                 first = !shown ? code ?? "" : code != null && !string.IsNullOrEmpty(it.Name) ? code + " · " + it.Name : code ?? it.Name ?? "";
             }
-            else first = Lang.T("calendar.movie") + (it.ProductionYear != null ? " · " + it.ProductionYear : "");
+            else first = Lang.T("calendar.movie") + (Library.YearScore(it) is string ys ? " · " + ys : "");
             var second = new List<string>();
             string time = Library.AirTime(it.PremiereDate);
             if (time != null) second.Add(time);

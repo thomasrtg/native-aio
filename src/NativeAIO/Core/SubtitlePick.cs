@@ -33,6 +33,7 @@ namespace NativeAIO.Core
         {
             public List<string> Languages, Types;
             public string Mode, ShowPick;
+            public string Exact; // piste exacte retenue pour ce titre et ce lien (ExactTracks), posée par le lecteur
         }
 
         public const string Off = "off";

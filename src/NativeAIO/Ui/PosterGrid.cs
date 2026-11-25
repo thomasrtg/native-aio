@@ -65,7 +65,7 @@ namespace NativeAIO.Ui
         bool loading, failed, refreshing;
 
         // Deuxième ligne sous l'affiche (année, « S2 É9 · 12 nov. »…) ; coche « vu » montrée ou non.
-        public Func<Item, string> Caption = it => it.ProductionYear?.ToString();
+        public Func<Item, string> Caption = Library.YearScore;
         public bool ShowPlayed = true;
         public Func<string> EmptyText, FailedText;
         // Nombre de titres, chargement ou échec changés : l'écran met son en-tête à jour.

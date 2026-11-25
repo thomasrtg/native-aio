@@ -976,14 +976,16 @@ namespace NativeAIO.Screens
                     HorizontalAlignment = round ? HorizontalAlignment.Center : HorizontalAlignment.Begin,
                     Text = it.Name ?? "",
                 });
-            if (!round && Prefs.PosterYear && it.ProductionYear != null)
+            string caption = !round && Prefs.PosterYear ? Library.YearScore(it) : null;
+            if (caption != null)
                 t.Root.Add(new TextLabel
                 {
                     Position = new Position(0, s.ImageH + 12 + (Prefs.PosterTitle ? TitleH : 0)),
                     Size = new Size(s.TileW, CaptionH),
                     PointSize = Theme.SizeInfo,
                     TextColor = Theme.Grey,
-                    Text = it.ProductionYear.ToString(),
+                    Ellipsis = true,
+                    Text = caption,
                 });
             if (!round && !Prefs.PosterTitle && t.Url == null) t.Frame.Add(Pictures.NoArt(it.Name, s.TileW, s.ImageH));
             if (round && t.Url == null)
@@ -1114,10 +1116,7 @@ namespace NativeAIO.Screens
         // dans une liste : demandés à part (Library.Details), une fois par titre.
         void FillFiche(Item it)
         {
-            string meta = Library.Meta(it);
-            string score = it.Type == "Episode" ? null : Library.Score(it);
-            if (score != null) meta = meta.Length > 0 ? meta + "  ·  " + score : score;
-            ficheMeta.Text = meta;
+            ficheMeta.Text = Library.Meta(it);
             ficheText.Text = Pictures.Cut(it.Overview, 190) ?? "";
         }
 

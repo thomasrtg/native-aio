@@ -7,8 +7,9 @@
 // lecture part directement, sinon « Lire immédiatement » (films et épisodes) ; Aller à la série ou
 // Ouvrir (pas sur la page du titre lui-même) ; trait ; Marquer comme vu / non vu (pas une
 // collection) ; vu jusqu'ici (épisode) ; Retirer de Reprendre (titre commencé) ; Ajouter aux
-// favoris / Retirer des favoris (films et séries, ou titre déjà en favori). Retirés par l'auteur :
-// playlist, téléchargement, « Détails » ; « Épisode aléatoire » plus tard.
+// favoris / Retirer des favoris (films et séries, ou titre déjà en favori) ; Noter (films, séries,
+// épisodes, Ui/RatingPanel.cs, 2026-11-25) ; Épisode aléatoire (série, Screens/RandomScreen.cs,
+// 2026-11-25). Retirés par l'auteur : playlist, téléchargement, « Détails ».
 // Boîte commune (Ui/Picker.cs, OpenMenu) posée par l'écran au-dessus de tout le reste.
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,7 @@ namespace NativeAIO.Ui
         readonly Screen owner;
         readonly Action<string, Action> guard;
         readonly Picker picker = new Picker();
+        readonly RatingPanel rating = new RatingPanel();
         Timer holdTimer; // gardé dans un champ, sinon il s'arrête
         Item pressed, show;
         Action onShort;
@@ -41,7 +43,7 @@ namespace NativeAIO.Ui
         public bool Wide { get; private set; }
 
         public View View => picker.View;
-        public bool IsOpen => picker.IsOpen;
+        public bool IsOpen => picker.IsOpen || rating.IsOpen;
 
         public CardMenu(Screen owner, Action<string, Action> guard)
         {
@@ -98,6 +100,7 @@ namespace NativeAIO.Ui
         // touche pendant l'appui sur OK l'abandonne.
         public bool Key(string key)
         {
+            if (rating.IsOpen) { if (!rating.OnKey(key)) App.Current.KeyIgnored(); return true; }
             if (picker.IsOpen) { if (!picker.OnKey(key)) App.Current.KeyIgnored(); return true; }
             if (pressed != null) Drop();
             return false;
@@ -115,6 +118,7 @@ namespace NativeAIO.Ui
 
         public bool Back()
         {
+            if (rating.IsOpen) { guard("Back", rating.Close); return true; }
             if (!picker.IsOpen) return false;
             guard("Back", picker.Close);
             return true;
@@ -125,6 +129,7 @@ namespace NativeAIO.Ui
         {
             Drop();
             if (picker.IsOpen) picker.Close();
+            if (rating.IsOpen) rating.Close();
         }
 
         public void Drop()
@@ -202,10 +207,31 @@ namespace NativeAIO.Ui
                         Keep(it, d);
                         it.UserData.IsFavorite = d?.IsFavorite ?? !favorite;
                     }));
+            if (it.Type == "Movie" || it.Type == "Series" || it.Type == "Episode")
+            {
+                double? r = it.UserData?.Rating;
+                Add(r != null ? Lang.T("menu.rated", RatingPanel.Format(r.Value)) : Lang.T("menu.rate"), "menu_rate", () => Rate(it, card));
+            }
+            if (it.Type == "Series")
+                Add(Lang.T("menu.random"), "menu_shuffle", () => RandomScreen.Episode(owner, it));
             if (items.Count == 0) { App.Current.KeyIgnored(); return; }
             string title = onPage || !episode ? it.Name : it.SeriesName ?? it.Name;
             picker.OpenMenu(items, card.X, card.Y, card.W, card.H, MenuW, title, i => guard("Menu", () => acts[i]()));
             Probe.Log("menu", $"menu de « {title} » ouvert ({items.Count} lignes, carte {card.X:0},{card.Y:0} {card.W:0}×{card.H:0})");
+        }
+
+        // Panneau des étoiles, posé à côté de at (carte ou bouton) ; la note part au serveur, puis
+        // Changed prévient l'écran.
+        public void Rate(Item it, (float X, float Y, float W, float H) at)
+        {
+            if (rating.View.GetParent() == null && picker.View.GetParent() is View layer) layer.Add(rating.View);
+            rating.Open(it.UserData?.Rating, at.X, at.Y, at.W, at.H, v => guard("Rate", () =>
+                Send(it, v == null ? "note effacée" : "noté " + RatingPanel.Format(v.Value), async () =>
+                {
+                    UserItemData d = await Library.SetRating(it.Id, v);
+                    Keep(it, d);
+                    if (d == null) it.UserData.Rating = v;
+                })));
         }
 
         // Données renvoyées par le serveur : gardées dans le titre (cartes, page). Sans réponse,

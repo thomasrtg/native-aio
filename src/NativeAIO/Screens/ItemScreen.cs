@@ -197,6 +197,14 @@ namespace NativeAIO.Screens
                 () => item != null && (item.UserData?.IsFavorite == true || item.Type == "Movie" || item.Type == "Series"), ToggleFavorite,
                 () => item?.UserData?.IsFavorite == true ? Lang.T("item.remove_favourite") : Lang.T("item.add_favourite"),
                 () => item?.UserData?.IsFavorite == true, true);
+            // Note personnelle (comme RatingButton du web) : étoile pleine si le titre est noté.
+            AddButton(() => item?.UserData?.Rating != null ? "star_solid" : "star",
+                () => item != null && (item.Type == "Movie" || item.Type == "Series" || item.Type == "Episode"), RateItem,
+                () => item?.UserData?.Rating != null ? Lang.T("menu.rated", RatingPanel.Format(item.UserData.Rating.Value)) : Lang.T("menu.rate"),
+                () => item?.UserData?.Rating != null);
+            // Épisode aléatoire (comme le bouton du web sur la page d'une série).
+            AddButton(() => "menu_shuffle", () => item != null && item.Type == "Series", () => RandomScreen.Episode(this, item),
+                () => Lang.T("menu.random"));
 
             // Ce que l'accueil savait déjà : les images arrivent pendant que la fiche est demandée.
             if (seed != null) RequestHeaderImages(seed);
@@ -282,6 +290,8 @@ namespace NativeAIO.Screens
 
         void MenuDone(Item it)
         {
+            // Le titre lui-même (bouton étoile) : ligne d'informations et boutons refaits.
+            if (it == item) { meta.Text = MetaLine(item); RefreshButtons(); return; }
             bool reload = false;
             foreach (Section s in sections)
                 foreach (Tile t in s.Tiles)
@@ -675,6 +685,7 @@ namespace NativeAIO.Screens
             }
             string score = Library.Score(it);
             if (score != null) parts.Add(score);
+            if (it.UserData?.Rating != null) parts.Add(Lang.T("menu.rated", RatingPanel.Format(it.UserData.Rating.Value)));
             if (it.Type == "Series" && it.Status != null)
                 parts.Add(it.Status == "Continuing" ? Lang.T("item.continuing") : it.Status == "Ended" ? Lang.T("item.ended") : it.Status);
             return string.Join("   ·   ", parts);
@@ -838,6 +849,13 @@ namespace NativeAIO.Screens
             catch (ApiError e) { if (!Closed) SetNote(SignInScreen.ErrorText(e)); }
             catch (Exception) { if (!Closed) SetNote(Lang.T("error.unknown")); }
             finally { busy = false; }
+        }
+
+        void RateItem()
+        {
+            if (item == null) return;
+            Btn b = buttons.Find(x => x.Run == (Action)RateItem);
+            cardMenu.Rate(item, CardMenu.Place(b?.Box));
         }
 
         async void ToggleFavorite()
@@ -1236,9 +1254,10 @@ namespace NativeAIO.Screens
                     t.Label = new TextLabel { Position = new Position(0, ty), Size = new Size(s.TileW, 34), PointSize = Theme.SizeBody, Ellipsis = true, TextColor = Color.White, Text = it.Name ?? "" };
                     t.Root.Add(t.Label);
                 }
-                if (Prefs.PosterYear && it.ProductionYear != null)
+                string caption = Prefs.PosterYear ? Library.YearScore(it) : null;
+                if (caption != null)
                 {
-                    t.Text = new TextLabel { Position = new Position(0, ty + (Prefs.PosterTitle ? 36 : 0)), Size = new Size(s.TileW, 28), PointSize = Theme.SizeInfo, Ellipsis = true, TextColor = Theme.Grey, Text = it.ProductionYear.ToString() };
+                    t.Text = new TextLabel { Position = new Position(0, ty + (Prefs.PosterTitle ? 36 : 0)), Size = new Size(s.TileW, 28), PointSize = Theme.SizeInfo, Ellipsis = true, TextColor = Theme.Grey, Text = caption };
                     t.Root.Add(t.Text);
                 }
                 if (!Prefs.PosterTitle && t.Url == null) t.Frame.Add(Pictures.NoArt(it.Name, s.TileW, s.ImageH));

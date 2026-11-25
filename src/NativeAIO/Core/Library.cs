@@ -236,10 +236,10 @@ namespace NativeAIO.Core
         // ---- Favoris, Historique, fiche d'une personne (module 13b) ----
 
         // Favoris (useItemPages avec filter « favorite » du web) : Movie,Series, Movie ou Series.
-        public static Task<ItemsResult> Favorites(string types, int start, int size) =>
+        public static Task<ItemsResult> Favorites(string types, int start, int size, string fields = null) =>
             Session.Client.Get<ItemsResult>(Q("/Items", ("userId", Session.UserId), ("Filters", "IsFavorite"),
                 ("IncludeItemTypes", types), ("Recursive", true), ("StartIndex", start), ("Limit", size),
-                ("EnableTotalRecordCount", true)));
+                ("EnableTotalRecordCount", true), ("Fields", fields)));
 
         // Films et épisodes vus, le plus récent d'abord (useOwnHistory du web).
         public static Task<ItemsResult> Played(string types, int start, int size) =>
@@ -352,6 +352,13 @@ namespace NativeAIO.Core
         // Note sur 10 : « ★ 8.3 ».
         public static string Score(Item it) =>
             it.CommunityRating > 0 ? "\u2605 " + it.CommunityRating.Value.ToString("0.0", CultureInfo.InvariantCulture) : null;
+
+        // Année et note du public, pour la légende d'une affiche : « 2021 · ★ 7.9 » (l'un ou l'autre seul).
+        public static string YearScore(Item it)
+        {
+            string y = it.ProductionYear?.ToString(CultureInfo.InvariantCulture), s = Score(it);
+            return y != null && s != null ? y + " · " + s : y ?? s;
+        }
 
         // Code d'un épisode : « S02E08 ».
         public static string Code(Item it) =>
@@ -570,6 +577,12 @@ namespace NativeAIO.Core
             await Task.WhenAll(Worker(), Worker(), Worker(), Worker());
         }
 
+        // Note personnelle de 0 à 10 (useSetRating du web) ; null l'efface.
+        public static Task<UserItemData> SetRating(string id, double? rating) =>
+            rating == null
+                ? Session.Client.Delete<UserItemData>(Q($"/UserItems/{id}/Rating", ("userId", Session.UserId)))
+                : Session.Client.Post<UserItemData>(Q($"/UserItems/{id}/UserData", ("userId", Session.UserId)), new RatingBody { Rating = rating.Value });
+
         public static Task<UserItemData> SetFavorite(string id, bool favorite)
         {
             string path = Q($"/UserFavoriteItems/{id}", ("userId", Session.UserId));
@@ -679,6 +692,9 @@ namespace NativeAIO.Core
                     for (int i = 0; i < it.Genres.Length && i < 2; i++) parts.Add(it.Genres[i]);
                 if (it.ProductionYear != null) parts.Add(it.ProductionYear.Value.ToString(CultureInfo.InvariantCulture));
             }
+            // Note du public juste après le titre ou l'année (demande de l'auteur : visible depuis l'accueil).
+            string score = Score(it);
+            if (score != null) parts.Add(score);
             if (it.Type != "Series" && it.RunTimeTicks > 0)
             {
                 long pos = it.UserData?.PlaybackPositionTicks ?? 0;
@@ -895,6 +911,12 @@ namespace NativeAIO.Core
     }
 
     [DataContract]
+    public class RatingBody
+    {
+        [DataMember] public double Rating;
+    }
+
+    [DataContract]
     public class ResumeReset
     {
         [DataMember] public long PlaybackPositionTicks;
@@ -909,6 +931,7 @@ namespace NativeAIO.Core
         [DataMember] public double? PlayedPercentage;
         [DataMember] public string LastPlayedDate;
         [DataMember] public int? PlayCount;
+        [DataMember] public double? Rating; // note personnelle, de 0 à 10
     }
 
     // Champs ajoutés par AIOStreams.

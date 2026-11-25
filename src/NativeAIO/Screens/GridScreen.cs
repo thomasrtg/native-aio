@@ -42,12 +42,21 @@ namespace NativeAIO.Screens
         protected abstract string[] Types { get; }    // une sorte par pastille
         protected abstract string Name { get; }       // journal de la sonde
         protected abstract Task<ItemsResult> Fetch(string types, int start, int size);
-        protected virtual string Caption(Item it) => it.ProductionYear?.ToString();
+        protected virtual string Caption(Item it) => Library.YearScore(it);
         protected virtual bool ShowPlayed => true;
         protected virtual string EmptyText => Lang.T("discover.empty");
         protected virtual string FailedText => Lang.T("grid.failed");
         protected virtual bool RefreshOnReturn => true;
         protected virtual void BuildMore() { }
+        // Bouton après les pastilles (Favoris : « Tirage au sort », comme le web) ; null : aucun.
+        protected virtual string ExtraText => null;
+        protected virtual void ExtraRun() { }
+        protected string ChosenTypes => Types[pills.Chosen];
+        View extra;
+        TextLabel extraLabel;
+        ImageView extraIcon;
+        bool onExtra;
+        const int ExtraH = 44;
 
         protected int PillsY => TopY + TitleH + PillsGap;
         protected int GridY => PillsY + PillsH + GridGap;
@@ -63,6 +72,15 @@ namespace NativeAIO.Screens
             pane.Add(title);
             pane.Add(count);
             pills = new Pills(pane, X, PillsY);
+            if (ExtraText != null)
+            {
+                extra = new View { PositionY = PillsY + (PillsH - ExtraH) / 2, Size = new Size(200, ExtraH) }.Rounded(ExtraH / 2);
+                extraIcon = new ImageView { ResourceUrl = Theme.IconPath("menu_shuffle"), Size = new Size(22, 22), Position = new Position(18, (ExtraH - 22) / 2) };
+                extraLabel = new TextLabel { Position = new Position(48, 0), Size = new Size(150, ExtraH), PointSize = Theme.SizeBody, VerticalAlignment = VerticalAlignment.Center };
+                extra.Add(extraIcon);
+                extra.Add(extraLabel);
+                pane.Add(extra);
+            }
             grid = new PosterGrid(pane, guard, () => Closed, Name, X, GridY, Cols)
             {
                 Caption = Caption,
@@ -83,6 +101,14 @@ namespace NativeAIO.Screens
             title.Text = TitleText;
             pills.SetTexts(new[] { Lang.T("discover.all"), Lang.T("discover.movies"), Lang.T("discover.shows") });
             grid.ApplyTexts();
+            if (extra != null)
+            {
+                extraLabel.Text = ExtraText;
+                int w = 48 + 22 + ExtraText.Length * 13;
+                extra.SizeWidth = w;
+                extraLabel.SizeWidth = w - 48;
+                extra.PositionX = X + pills.Width + 16;
+            }
             Paint();
         }
 
@@ -128,8 +154,15 @@ namespace NativeAIO.Screens
 
         void Paint()
         {
-            pills.Focus(!inSidebar && !inGrid);
+            pills.Focus(!inSidebar && !inGrid && !onExtra);
             grid.Focus(!inSidebar && inGrid);
+            if (extra != null)
+            {
+                bool on = !inSidebar && !inGrid && onExtra;
+                extra.BackgroundColor = on ? Color.White : Theme.Surface;
+                extraLabel.TextColor = on ? Theme.Ink : Theme.Text;
+                extraIcon.Color = on ? Theme.Ink : Color.White; // icône blanche teinte au mélange (LECONS.md)
+            }
         }
 
         public override void OnSidebar(bool focused)
@@ -160,13 +193,26 @@ namespace NativeAIO.Screens
 
         bool PillsKey(string key)
         {
+            if (onExtra)
+                switch (key)
+                {
+                    case "Left": onExtra = false; Paint(); return true;
+                    case "Right": case "Up": App.Current.KeyIgnored(); return true;
+                    case "Return": case "KP_Enter": ExtraRun(); return true;
+                    case "Down":
+                        if (grid.Count > 0) { onExtra = false; inGrid = true; Paint(); }
+                        else App.Current.KeyIgnored();
+                        return true;
+                }
             switch (key)
             {
                 case "Left":
                     if (pills.Move(-1)) { Reload(); return true; }
                     return LeftEdge();
                 case "Right":
-                    if (pills.Move(1)) Reload(); else App.Current.KeyIgnored();
+                    if (pills.Move(1)) Reload();
+                    else if (extra != null) { onExtra = true; Paint(); }
+                    else App.Current.KeyIgnored();
                     return true;
                 case "Down":
                 case "Return":
@@ -212,5 +258,7 @@ namespace NativeAIO.Screens
         protected override string Name => "favoris";
         protected override string EmptyText => Lang.T("favorites.empty");
         protected override Task<ItemsResult> Fetch(string types, int start, int size) => Library.Favorites(types, start, size);
+        protected override string ExtraText => Lang.T("random.favourite_button");
+        protected override void ExtraRun() => RandomScreen.Favourite(this, ChosenTypes);
     }
 }

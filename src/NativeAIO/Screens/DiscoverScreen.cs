@@ -859,14 +859,16 @@ namespace NativeAIO.Screens
                     TextColor = Color.White,
                     Text = it.Name ?? "",
                 });
-            if (showYear && it.ProductionYear != null)
+            string caption = showYear ? Library.YearScore(it) : null;
+            if (caption != null)
                 t.Root.Add(new TextLabel
                 {
                     Position = new Position(0, ImageH + 12 + (showTitle ? TitleLineH : 0)),
                     Size = new Size(TileW, CaptionH),
                     PointSize = Theme.SizeInfo,
                     TextColor = Theme.Grey,
-                    Text = it.ProductionYear.ToString(),
+                    Ellipsis = true,
+                    Text = caption,
                 });
             if (it.UserData?.Played == true) t.Frame.Add(Check(TileW - 52, 12));
         }
@@ -969,10 +971,7 @@ namespace NativeAIO.Screens
         // (Library.Details), une fois par titre.
         void FillFiche(Item it)
         {
-            string meta = Library.Meta(it);
-            string score = it.Type == "Episode" ? null : Library.Score(it);
-            if (score != null) meta = meta.Length > 0 ? meta + "  ·  " + score : score;
-            ficheMeta.Text = meta;
+            ficheMeta.Text = Library.Meta(it);
             ficheText.Text = Pictures.Cut(it.Overview, 260) ?? "";
         }
 

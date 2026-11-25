@@ -649,7 +649,7 @@ namespace NativeAIO.Screens
                 int audioLater = await Task.Run(() => ChooseAudio(p, audioIn));
                 if (Closed || p != player) { Dispose(p); return; }
                 // Sous-titres choisis selon les réglages (piste du fichier posée après le démarrage).
-                SubtitlePick.Inputs subIn = SubtitlePick.Read(SeriesOf(target));
+                SubtitlePick.Inputs subIn = ReadSubInputs();
                 int subPick = await Task.Run(() => PickSubtitle(p, subIn, audioLater));
                 if (Closed || p != player) { Dispose(p); return; }
                 guard.Run("SubPick", () => ApplySubPick(subPick));
@@ -1251,6 +1251,7 @@ namespace NativeAIO.Screens
             public List<string> Languages, Order;
             public bool PreferDefault;
             public string ShowPick;
+            public string Exact; // piste exacte retenue pour ce titre et ce lien (Core/ExactTracks.cs)
         }
 
         // Réglages lus sur le fil d'interface (Prefs n'est pas fait pour être lu ailleurs).
@@ -1258,10 +1259,22 @@ namespace NativeAIO.Screens
         {
             var a = new AudioInputs { Order = Prefs.AudioTypes };
             a.Languages = AudioPick.Languages(SeriesOf(target), out a.PreferDefault, out a.ShowPick);
+            a.Exact = Prefs.RememberAudio ? ExactTracks.Audio(target?.Id, source) : null;
             return a;
         }
 
-        static string SeriesOf(Item it) => it != null && it.Type == "Episode" ? it.SeriesId : null;
+        // Réglages des sous-titres, avec la piste exacte retenue pour ce lien. Sur le fil d'interface.
+        SubtitlePick.Inputs ReadSubInputs()
+        {
+            SubtitlePick.Inputs i = SubtitlePick.Read(SeriesOf(target));
+            i.Exact = Prefs.RememberSubtitles ? ExactTracks.Subtitle(target?.Id, source) : null;
+            return i;
+        }
+
+        // Clé du choix des pistes : la série pour un épisode (comme le web), le film lui-même pour
+        // un film (ajout de Native AIO : le web ne retient rien pour un film).
+        static string SeriesOf(Item it) =>
+            it == null ? null : it.Type == "Episode" ? it.SeriesId : it.Type == "Movie" ? it.Id : null;
 
         // Pistes audio du lecteur, décrites par le serveur (langue, titre, par défaut) quand les
         // nombres de pistes concordent ; sinon la seule langue donnée par le lecteur.
@@ -1296,11 +1309,14 @@ namespace NativeAIO.Screens
                 cur = p.AudioTrackInfo.Selected;
                 List<string> codes = AudioPick.Codes(inputs.Languages, source);
                 t = AudioPick.Choose(tracks, cur, codes, inputs.PreferDefault, inputs.Order, out why);
+                AudioPick.Track exact = ExactTracks.Resolve(inputs.Exact, tracks);
+                if (exact != null) { t = exact; why = "piste exacte retenue pour ce lien"; }
                 var langs = new List<string>();
                 foreach (AudioPick.Track x in tracks) langs.Add((x.IsDefault ? "*" : "") + (x.Lang ?? "?"));
                 log = $"{tracks.Count} pistes [{string.Join(" ", langs)}] ({ServerTracks("Audio").Count} au serveur), lecteur {cur}, "
                     + $"langues [{string.Join(", ", codes)}]{(inputs.ShowPick != null ? " (série : " + inputs.ShowPick + ")" : "")}"
-                    + (inputs.PreferDefault ? ", défaut d'abord" : "");
+                    + (inputs.PreferDefault ? ", défaut d'abord" : "")
+                    + (inputs.Exact != null ? $", exacte « {inputs.Exact} »" : "");
             }
             catch (Exception e) { Probe.Log("audio", "pistes illisibles : " + e.Message); return -1; }
             if (t == null || t.Index == cur) { Probe.Log("audio", log + $" : piste {cur} gardée ({why})"); return -1; }
@@ -1317,16 +1333,20 @@ namespace NativeAIO.Screens
             }
         }
 
-        // Piste choisie à la main sur un épisode : sa langue devient celle de la série (compte,
+        // Piste choisie à la main sur un épisode ou un film : sa langue devient celle de la série ou du film (compte,
         // comme le web), sauf si c'est celle que les réglages auraient prise (choix oublié).
+        // Et la piste exacte, pour ce titre et ce lien (Core/ExactTracks.cs).
         void RememberAudio(int index)
         {
             string series = SeriesOf(target);
-            if (series == null || !Prefs.RememberAudio || player == null) return;
+            if (!Prefs.RememberAudio || player == null) return;
             try
             {
                 List<AudioPick.Track> tracks = AudioTracks(player);
-                string lang = Languages.Real(tracks.Find(x => x.Index == index)?.Lang);
+                AudioPick.Track picked = tracks.Find(x => x.Index == index);
+                if (picked != null) ExactTracks.SetAudio(target?.Id, source, ExactTracks.Describe(picked));
+                if (series == null) return;
+                string lang = Languages.Real(picked?.Lang);
                 if (lang == null) return;
                 string settings = AudioPick.SettingsLanguage(tracks, source);
                 Prefs.SetShowAudio(series, Languages.Same(lang, settings) ? null : lang);
@@ -1393,6 +1413,12 @@ namespace NativeAIO.Screens
                 int a = audioIndex >= 0 ? audioIndex : p.AudioTrackInfo.Selected;
                 string audioLang = AudioTracks(p).Find(x => x.Index == a)?.Lang;
                 SubtitlePick.Track t = SubtitlePick.Choose(file, server, audioLang, inputs, out string why);
+                if (inputs.Exact != null)
+                {
+                    SubtitlePick.Track exact = ExactTracks.Resolve(inputs.Exact, file, server, out bool found);
+                    if (found) { t = exact; why = $"piste exacte retenue pour ce lien « {inputs.Exact} »"; }
+                    else why += $", exacte « {inputs.Exact} » introuvable";
+                }
                 Probe.Log("subs", $"choix : mode {inputs.Mode}, langues [{string.Join(", ", inputs.Languages)}]"
                     + (inputs.ShowPick != null ? $" (série : {inputs.ShowPick})" : "")
                     + $", audio {audioLang ?? "?"}, fichier [{string.Join(" ", file.ConvertAll(Describe))}], {server.Count} au serveur : "
@@ -1417,24 +1443,27 @@ namespace NativeAIO.Screens
         {
             Player p = player;
             if (p == null || subtitleTouched) return;
-            SubtitlePick.Inputs inputs = SubtitlePick.Read(SeriesOf(target));
+            SubtitlePick.Inputs inputs = ReadSubInputs();
             int v = await Task.Run(() => PickSubtitle(p, inputs, -1));
             if (Closed || p != player) return;
             guard.Run("SubRepick", () => ApplySubPick(v, false));
         }
 
-        // Sous-titres choisis ou coupés à la main sur un épisode : gardés pour la série (compte,
+        // Sous-titres choisis ou coupés à la main sur un épisode ou un film : gardés pour la série ou le film (compte,
         // comme le web), sauf si c'est ce que les réglages auraient montré (choix oublié).
         void RememberSubtitle(int value)
         {
             string series = SeriesOf(target);
-            if (series == null || !Prefs.RememberSubtitles || player == null) return;
+            if (!Prefs.RememberSubtitles || player == null) return;
             try
             {
                 List<SubtitlePick.Track> all = FileSubTracks(player, true);
                 all.AddRange(ServerSubTracks());
                 SubtitlePick.Track t = value >= 0 ? all.Find(x => x.Value == value) : null;
                 if (value >= 0 && t == null) return;
+                // Et la piste exacte, pour ce titre et ce lien (Core/ExactTracks.cs).
+                ExactTracks.SetSubtitle(target?.Id, source, ExactTracks.Describe(t, all));
+                if (series == null) return;
                 string pick = SubtitlePick.ShowPickFor(t, all, out bool keep);
                 if (keep) Prefs.SetShowSubtitle(series, pick);
             }

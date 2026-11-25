@@ -501,7 +501,7 @@ namespace NativeAIO.Core
         }
 
         // ---- Choix par série (web : show-tracks.ts) ----
-        // /DisplayPreferences/aiostreams-web-tracks, CustomPrefs : identifiant de la série →
+        // /DisplayPreferences/aiostreams-web-tracks, CustomPrefs : identifiant de la série (ou du film) →
         // « audio|sous-titres » (un code de langue chacun, « off » pour aucun sous-titre, ou
         // vide ; le type du sous-titre peut suivre sa langue : « eng:forced »).
 

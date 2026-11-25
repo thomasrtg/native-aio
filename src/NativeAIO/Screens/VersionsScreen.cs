@@ -275,7 +275,7 @@ namespace NativeAIO.Screens
                 if (code != null) parts.Add(code);
                 if (!string.IsNullOrEmpty(target.Name)) parts.Add(target.Name);
             }
-            else if (target.ProductionYear != null) parts.Add(target.ProductionYear.ToString());
+            else if (Library.YearScore(target) is string ys) parts.Add(ys);
             sub.Text = string.Join(" · ", parts);
             if (halfTexts != null)
             {
